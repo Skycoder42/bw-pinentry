@@ -1,3 +1,4 @@
+import 'assuan_error_code.dart';
 import 'assuan_exception.dart';
 
 class AssuanDataWriter {
@@ -10,9 +11,9 @@ class AssuanDataWriter {
         String() => _writeRaw(Uri.encodeFull(object), autoSpace: autoSpace),
         num() || bool() => _writeRaw(object.toString(), autoSpace: autoSpace),
         _ =>
-          throw AssuanException(
-            'Unsupported data type: ${object.runtimeType}',
-            object,
+          throw AssuanException.code(
+            AssuanErrorCode.invValue,
+            'Unsupported data type <${object.runtimeType}>',
           ),
       };
 
@@ -23,8 +24,10 @@ class AssuanDataWriter {
     _buffer.write(data);
 
     if (_buffer.length > 1000) {
-      throw const AssuanException(
-        'Message too long! Must be less than 1000 bytes',
+      throw AssuanException.code(
+        AssuanErrorCode.lineTooLong,
+        'Message too long! Must be less than 1000 bytes, '
+        'but is at least ${_buffer.length}',
       );
     }
   }

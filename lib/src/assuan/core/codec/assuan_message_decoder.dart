@@ -3,10 +3,12 @@ import 'dart:convert';
 import 'package:meta/meta.dart';
 
 import '../models/assuan_data_reader.dart';
+import '../models/assuan_error_code.dart';
 import '../models/assuan_exception.dart';
 import '../models/assuan_message.dart';
 import '../models/assuan_message_handler.dart';
 import '../models/assuan_protocol.dart';
+import 'converter_sink.dart';
 
 class AssuanRequestDecoder extends AssuanMessageDecoder<AssuanRequest> {
   AssuanRequestDecoder(super.protocol);
@@ -47,12 +49,19 @@ sealed class AssuanMessageDecoder<T extends AssuanMessage>
 
     final handler = getHandler(command);
     if (handler == null) {
-      throw AssuanException('Unknown command: $command', line);
+      throw AssuanException.code(
+        AssuanErrorCode.unknownCmd,
+        'Unknown command: $command',
+      );
     }
 
     final reader = AssuanDataReader(line, offset);
     return handler.decodeData(reader);
   }
+
+  @override
+  Sink<String> startChunkedConversion(Sink<T> sink) =>
+      ConverterSink(sink, this);
 
   (String command, int offset) _splitLine(String line) {
     final spaceIdx = line.indexOf(' ');

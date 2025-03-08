@@ -1,3 +1,4 @@
+import 'assuan_error_code.dart';
 import 'assuan_exception.dart';
 
 class AssuanDataReader {
@@ -18,7 +19,11 @@ class AssuanDataReader {
       const (int) => int.parse(raw) as T,
       const (double) => double.parse(raw) as T,
       const (bool) => bool.parse(raw) as T,
-      _ => throw AssuanException('Unsupported data type: $T'),
+      _ =>
+        throw AssuanException.code(
+          AssuanErrorCode.invValue,
+          'Unsupported data type <$T>',
+        ),
     };
   }
 
@@ -43,7 +48,10 @@ class AssuanDataReader {
 
   String _readRaw({bool fixedSpace = false, bool readToEnd = false}) {
     if (_atEnd) {
-      throw AssuanException('Unexpected end of data', _data, _offset);
+      throw AssuanException.code(
+        AssuanErrorCode.incompleteLine,
+        'Unexpected end of data',
+      );
     }
 
     // debug assert, as this should never happen
@@ -54,7 +62,10 @@ class AssuanDataReader {
 
     final start = fixedSpace ? _offset + 1 : _nextNonSpaceIndex();
     if (start == -1 || start >= _data.length) {
-      throw AssuanException('Unexpected end of data', _data, _offset);
+      throw AssuanException.code(
+        AssuanErrorCode.incompleteLine,
+        'Unexpected end of data',
+      );
     }
     final end = readToEnd ? -1 : _data.indexOf(_space, start);
 

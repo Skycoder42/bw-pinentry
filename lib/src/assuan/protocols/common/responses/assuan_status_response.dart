@@ -2,6 +2,7 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 
 import '../../../core/models/assuan_data_reader.dart';
 import '../../../core/models/assuan_data_writer.dart';
+import '../../../core/models/assuan_error_code.dart';
 import '../../../core/models/assuan_exception.dart';
 import '../../../core/models/assuan_message.dart';
 import '../../../core/models/assuan_message_handler.dart';
@@ -22,9 +23,9 @@ sealed class AssuanStatusResponse
 
   AssuanStatusResponse._() {
     if (!_keywordPattern.hasMatch(keyword)) {
-      throw AssuanException(
+      throw AssuanException.code(
+        AssuanErrorCode.parameter,
         'Invalid keyword: $keyword',
-        'S $keyword $status\n',
       );
     }
   }

@@ -9,3 +9,19 @@ abstract interface class AssuanMessageHandler<T extends AssuanMessage> {
 
   T decodeData(AssuanDataReader reader);
 }
+
+abstract class EmptyAssuanMessageHandler<T extends AssuanMessage>
+    implements AssuanMessageHandler<T> {
+  final T Function() _factory;
+
+  const EmptyAssuanMessageHandler(this._factory);
+
+  @override
+  bool hasData(_) => false;
+
+  @override
+  void encodeData(_, _) {}
+
+  @override
+  T decodeData(_) => _factory();
+}

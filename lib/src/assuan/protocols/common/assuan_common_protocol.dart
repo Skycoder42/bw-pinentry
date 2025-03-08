@@ -4,6 +4,14 @@ import '../../core/models/assuan_message.dart';
 import '../../core/models/assuan_message_handler.dart';
 import '../../core/models/assuan_protocol.dart';
 import 'assuan_comment.dart';
+import 'requests/assuan_bye_request.dart';
+import 'requests/assuan_can_request.dart';
+import 'requests/assuan_data_request.dart';
+import 'requests/assuan_end_request.dart';
+import 'requests/assuan_help_request.dart';
+import 'requests/assuan_nop_request.dart';
+import 'requests/assuan_option_request.dart';
+import 'requests/assuan_reset_request.dart';
 import 'responses/assuan_data_response.dart';
 import 'responses/assuan_error_response.dart';
 import 'responses/assuan_inquire_response.dart';
@@ -11,7 +19,17 @@ import 'responses/assuan_ok_response.dart';
 import 'responses/assuan_status_response.dart';
 
 class AssuanCommonProtocol implements AssuanProtocol {
-  final _requestHandlers = <String, AssuanMessageHandler<AssuanRequest>>{};
+  final _requestHandlers = <String, AssuanMessageHandler<AssuanRequest>>{
+    AssuanDataRequest.cmd: AssuanDataRequest.handler,
+    AssuanByeRequest.cmd: AssuanByeRequest.handler,
+    AssuanResetRequest.cmd: AssuanResetRequest.handler,
+    AssuanEndRequest.cmd: AssuanEndRequest.handler,
+    AssuanHelpRequest.cmd: AssuanHelpRequest.handler,
+    AssuanOptionRequest.cmd: AssuanOptionRequest.handler,
+    AssuanNopRequest.cmd: AssuanNopRequest.handler,
+    AssuanCanRequest.cmd: AssuanCanRequest.handler,
+  };
+
   final _responseHandlers = <String, AssuanMessageHandler<AssuanResponse>>{
     AssuanOkResponse.cmd: AssuanOkResponse.handler,
     AssuanErrorResponse.cmd: AssuanErrorResponse.handler,
@@ -28,6 +46,12 @@ class AssuanCommonProtocol implements AssuanProtocol {
     _requestHandlers.addAll(requestHandlers);
     _responseHandlers.addAll(responseHandlers);
   }
+
+  @override
+  Iterable<String> get requestCommands => _requestHandlers.keys;
+
+  @override
+  Iterable<String> get responseCommands => _responseHandlers.keys;
 
   @nonVirtual
   @override

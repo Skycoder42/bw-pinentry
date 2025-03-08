@@ -3,10 +3,12 @@ import 'dart:convert';
 import 'package:meta/meta.dart';
 
 import '../models/assuan_data_writer.dart';
+import '../models/assuan_error_code.dart';
 import '../models/assuan_exception.dart';
 import '../models/assuan_message.dart';
 import '../models/assuan_message_handler.dart';
 import '../models/assuan_protocol.dart';
+import 'converter_sink.dart';
 
 class AssuanRequestEncoder extends AssuanMessageEncoder<AssuanRequest> {
   AssuanRequestEncoder(super.protocol);
@@ -41,7 +43,10 @@ sealed class AssuanMessageEncoder<T extends AssuanMessage>
     final command = response.command;
     final handler = getHandler(command);
     if (handler == null) {
-      throw AssuanException('Unknown command: $command', response);
+      throw AssuanException.code(
+        AssuanErrorCode.unknownCmd,
+        'Unknown command: $command',
+      );
     }
 
     final buffer = StringBuffer(command);
@@ -51,11 +56,17 @@ sealed class AssuanMessageEncoder<T extends AssuanMessage>
     }
 
     if (buffer.length > 1000) {
-      throw const AssuanException(
-        'Message too long! Must be less than 1000 bytes',
+      throw AssuanException.code(
+        AssuanErrorCode.lineTooLong,
+        'Message too long! Must be less than 1000 bytes, '
+        'but is at least ${buffer.length}',
       );
     }
 
     return buffer.toString();
   }
+
+  @override
+  Sink<T> startChunkedConversion(Sink<String> sink) =>
+      ConverterSink(sink, this);
 }
