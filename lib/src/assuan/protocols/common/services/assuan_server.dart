@@ -240,8 +240,18 @@ abstract class AssuanServer {
   void _send(AssuanResponse response) => _responseSink.add(response);
 
   Future<void> _sendStream(Stream<String> stream, String? doneMessage) => stream
-      // TODO split stream to not make data packages too big
-      .listen((data) => _send(AssuanDataResponse(data)))
+      // TODO move to transformer
+      .map(Uri.encodeFull)
+      .expand((s) sync* {
+        var offset = 0;
+        while ((s.length - offset) > 998) {
+          yield s.substring(offset, offset + 998);
+          offset += 998;
+        }
+        yield s.substring(offset);
+      })
+      .map(AssuanDataResponse.new)
+      .listen(_send)
       .asFuture(doneMessage)
       .then((message) => _send(AssuanOkResponse(message)));
 
@@ -257,6 +267,7 @@ abstract class AssuanServer {
       if (_pendingInquire case StreamController<String>(:final sink)) {
         switch (request) {
           case AssuanDataRequest(:final data):
+            // TODO decode data -> transformer
             sink.add(data);
           case AssuanEndRequest():
             await sink.close();

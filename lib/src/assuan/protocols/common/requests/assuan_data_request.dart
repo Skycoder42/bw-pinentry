@@ -2,6 +2,8 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 
 import '../../../core/models/assuan_data_reader.dart';
 import '../../../core/models/assuan_data_writer.dart';
+import '../../../core/models/assuan_error_code.dart';
+import '../../../core/models/assuan_exception.dart';
 import '../../../core/models/assuan_message.dart';
 import '../../../core/models/assuan_message_handler.dart';
 
@@ -14,9 +16,16 @@ sealed class AssuanDataRequest
   static const cmd = 'D';
   static const handler = AssuanDataRequestHandler();
 
-  const factory AssuanDataRequest(String data) = _AssuanDataRequest;
+  factory AssuanDataRequest(String data) = _AssuanDataRequest;
 
-  const AssuanDataRequest._();
+  AssuanDataRequest._() {
+    if (data.contains('/r') || data.contains('/n')) {
+      throw AssuanException.code(
+        AssuanErrorCode.parameter,
+        'data must not contain CR or LF',
+      );
+    }
+  }
 
   @override
   String get command => cmd;
@@ -31,10 +40,10 @@ class AssuanDataRequestHandler
 
   @override
   void encodeData(AssuanDataRequest message, AssuanDataWriter writer) {
-    writer.write(message.data);
+    writer.writeRaw(message.data);
   }
 
   @override
   AssuanDataRequest decodeData(AssuanDataReader reader) =>
-      AssuanDataRequest(reader.readAll(fixedSpace: true));
+      AssuanDataRequest(reader.readRaw(fixedSpace: true, readToEnd: true));
 }

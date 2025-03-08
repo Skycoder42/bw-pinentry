@@ -8,8 +8,8 @@ class AssuanDataWriter {
 
   void write<T extends Object>(T object, {bool autoSpace = true}) =>
       switch (object) {
-        String() => _writeRaw(Uri.encodeFull(object), autoSpace: autoSpace),
-        num() || bool() => _writeRaw(object.toString(), autoSpace: autoSpace),
+        String() => writeRaw(Uri.encodeFull(object), autoSpace: autoSpace),
+        num() || bool() => writeRaw(object.toString(), autoSpace: autoSpace),
         _ =>
           throw AssuanException.code(
             AssuanErrorCode.invValue,
@@ -17,7 +17,7 @@ class AssuanDataWriter {
           ),
       };
 
-  void _writeRaw(String data, {bool autoSpace = true}) {
+  void writeRaw(String data, {bool autoSpace = true}) {
     if (autoSpace && _buffer.isNotEmpty) {
       _buffer.write(' ');
     }

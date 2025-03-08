@@ -13,7 +13,7 @@ class AssuanDataReader {
       !_atEnd && (fixedSpace || _nextNonSpaceIndex() != -1);
 
   T read<T extends Object>({bool fixedSpace = false}) {
-    final raw = _readRaw(fixedSpace: fixedSpace);
+    final raw = readRaw(fixedSpace: fixedSpace);
     return switch (T) {
       const (String) => Uri.decodeFull(raw) as T,
       const (int) => int.parse(raw) as T,
@@ -28,7 +28,7 @@ class AssuanDataReader {
   }
 
   String readAll({bool fixedSpace = false}) {
-    final raw = _readRaw(fixedSpace: fixedSpace, readToEnd: true);
+    final raw = readRaw(fixedSpace: fixedSpace, readToEnd: true);
     return Uri.decodeFull(raw);
   }
 
@@ -46,7 +46,7 @@ class AssuanDataReader {
     return readAll(fixedSpace: fixedSpace);
   }
 
-  String _readRaw({bool fixedSpace = false, bool readToEnd = false}) {
+  String readRaw({bool fixedSpace = false, bool readToEnd = false}) {
     if (_atEnd) {
       throw AssuanException.code(
         AssuanErrorCode.incompleteLine,
