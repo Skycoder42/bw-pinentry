@@ -11,6 +11,7 @@ void main(List<String> args) async {
   // ignore: close_sinks
   final logFileSink = logFile.openWrite();
   try {
+    logFileSink.writeln('STARTED');
     final pinentry = await Process.start('/usr/bin/pinentry-qt', const []);
 
     await Future.wait([

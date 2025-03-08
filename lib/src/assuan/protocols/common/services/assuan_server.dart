@@ -26,6 +26,8 @@ import '../responses/assuan_data_response.dart';
 import '../responses/assuan_error_response.dart';
 import '../responses/assuan_inquire_response.dart';
 import '../responses/assuan_ok_response.dart';
+import '../responses/assuan_status_response.dart';
+import 'server_reply.dart';
 
 abstract class AssuanServer {
   final AssuanCommonProtocol protocol;
@@ -36,11 +38,10 @@ abstract class AssuanServer {
 
   late final StreamSubscription<AssuanRequest> _requestSub;
   late final StreamSink<AssuanResponse> _responseSink;
+  var _processingRequest = false;
 
-  StreamController<String>? _currentDataStream;
   // ignore: close_sinks false positive
   StreamController<String>? _pendingInquire;
-  Completer<void>? _pendingSendData;
 
   AssuanServer(this.protocol, this.channel, {this.exitOnClose = false}) {
     _responseSink = channel.sink
@@ -81,7 +82,7 @@ abstract class AssuanServer {
     AssuanCommonProtocol protocol,
     Stdin stdin,
     Stdout stdout, {
-    Encoding encoding = utf8,
+    Encoding encoding = systemEncoding,
     bool exitOnClose = false,
   }) : this.raw(
          protocol,
@@ -95,6 +96,9 @@ abstract class AssuanServer {
 
   @mustCallSuper
   Future<void> close() async {
+    if (_closed) {
+      return;
+    }
     _closed = true;
 
     await Future.wait([
@@ -111,25 +115,26 @@ abstract class AssuanServer {
 
   @protected
   @nonVirtual
-  void send(AssuanResponse response) => _responseSink.add(response);
+  void sendStatus(String keyword, String status) =>
+      _send(AssuanStatusResponse(keyword, status));
 
   @protected
   @nonVirtual
-  StreamSink<String> sendData() {
-    if (_pendingSendData case Completer(isCompleted: false)) {
+  void sendComment(String comment) => _send(AssuanComment(comment));
+
+  @protected
+  @nonVirtual
+  Stream<String> startInquire(
+    String keyword, [
+    List<String> parameters = const [],
+  ]) {
+    if (!_processingRequest) {
       throw AssuanException.code(
-        AssuanErrorCode.nestedCommands,
-        'Cannot sendData while another sink is still open',
+        AssuanErrorCode.unknownInquire,
+        'Can only inquire while processing a client request',
       );
     }
 
-    final completer = _pendingSendData = Completer<void>();
-    return _SendDataSink(this, completer);
-  }
-
-  @protected
-  @nonVirtual
-  Stream<String> inquire(String keyword, [List<String> parameters = const []]) {
     if (_pendingInquire != null) {
       throw AssuanException.code(
         AssuanErrorCode.nestedCommands,
@@ -139,26 +144,22 @@ abstract class AssuanServer {
 
     // ignore: close_sinks
     final ctr = _pendingInquire = StreamController();
-    send(AssuanInquireResponse(keyword, parameters));
+    _send(AssuanInquireResponse(keyword, parameters));
     return ctr.stream;
   }
 
   @protected
-  Future<void> setOption(String name, String? value) => Future.value();
-
-  @protected
-  void onData(Stream<String> data) => unawaited(data.drain<void>());
-
-  @protected
-  Future<void> handleApplicationRequest(AssuanRequest request) {
-    send(
-      AssuanErrorResponse(
-        AssuanErrorCode.unknownCmd.code,
-        'Unknown command ${request.command}',
-      ),
-    );
-    return Future.value();
+  @nonVirtual
+  Future<String> inquire(String keyword, [List<String> parameters = const []]) {
+    final stream = startInquire(keyword, parameters);
+    return stream.join();
   }
+
+  @protected
+  Future<void> setOption(String name, String? value);
+
+  @protected
+  Future<ServerReply> handleRequest(AssuanRequest request);
 
   @protected
   @mustCallSuper
@@ -168,20 +169,9 @@ abstract class AssuanServer {
       closing ? 'Connection was closed' : 'Connection was reset',
     );
 
-    if (_pendingSendData case Completer(isCompleted: false)) {
-      _pendingSendData?.completeError(error, StackTrace.current);
-      _pendingSendData = null;
-    }
-
     if (_pendingInquire case final StreamController<String> ctr) {
       _pendingInquire = null;
-      ctr.addError(error, StackTrace.current);
-      await ctr.close();
-    }
-
-    if (_currentDataStream case final StreamController<String> ctr) {
-      _currentDataStream = null;
-      ctr.addError(error, StackTrace.current);
+      ctr.addError(error);
       await ctr.close();
     }
   }
@@ -202,38 +192,95 @@ abstract class AssuanServer {
   }
 
   Future<void> _handleRequest(AssuanRequest request) async {
-    try {
-      if (_pendingInquire case final StreamController<String> ctr) {
-        await _handleInquire(ctr.sink, request);
-        return;
-      }
+    if (_processingRequest) {
+      await _handleInquiry(request);
+      return;
+    }
 
+    try {
+      _processingRequest = true;
       switch (request) {
         case AssuanByeRequest():
-          send(const AssuanOkResponse());
+          _send(const AssuanOkResponse());
           await close();
         case AssuanResetRequest():
           await reset();
-          send(const AssuanOkResponse());
+          _send(const AssuanOkResponse());
         case AssuanHelpRequest():
           _sendHelp();
         case AssuanOptionRequest(:final name, :final value):
           await setOption(name, value);
-          send(const AssuanOkResponse());
+          _send(const AssuanOkResponse());
         case AssuanNopRequest():
-          send(const AssuanOkResponse());
-        case AssuanDataRequest(:final data):
-          _getDataSink().add(data);
-        case AssuanEndRequest():
-          await _currentDataStream?.close();
-          _currentDataStream = null;
-        case AssuanCanRequest():
+          _send(const AssuanOkResponse());
+        case AssuanDataRequest() || AssuanEndRequest() || AssuanCanRequest():
           throw AssuanException.code(
             AssuanErrorCode.unexpectedCmd,
-            'CAN is only allowed as response to INQUIRE',
+            '${request.command} is only allowed as response to INQUIRE',
           );
         default:
-          await handleApplicationRequest(request);
+          final reply = await handleRequest(request);
+          switch (reply) {
+            case OkReply(:final message):
+              _send(AssuanOkResponse(message));
+            case DataReply(:final data, :final message):
+              await _sendStream(Stream.value(data), message);
+            case DataStreamReply(:final data, :final message):
+              await _sendStream(data, message);
+          }
+      }
+      // ignore: avoid_catches_without_on_clauses
+    } catch (e, s) {
+      _handleError(e, s);
+    } finally {
+      _processingRequest = false;
+    }
+  }
+
+  void _send(AssuanResponse response) => _responseSink.add(response);
+
+  Future<void> _sendStream(Stream<String> stream, String? doneMessage) => stream
+      // TODO split stream to not make data packages too big
+      .listen((data) => _send(AssuanDataResponse(data)))
+      .asFuture(doneMessage)
+      .then((message) => _send(AssuanOkResponse(message)));
+
+  void _sendHelp() {
+    for (final cmd in protocol.requestCommands) {
+      _send(AssuanComment(cmd));
+    }
+    _send(const AssuanOkResponse());
+  }
+
+  Future<void> _handleInquiry(AssuanRequest request) async {
+    try {
+      if (_pendingInquire case StreamController<String>(:final sink)) {
+        switch (request) {
+          case AssuanDataRequest(:final data):
+            sink.add(data);
+          case AssuanEndRequest():
+            await sink.close();
+            _pendingInquire = null;
+          case AssuanCanRequest():
+            sink.addError(
+              AssuanException.code(
+                AssuanErrorCode.canceled,
+                'Inquire was canceled',
+              ),
+            );
+            await sink.close();
+            _pendingInquire = null;
+          default:
+            throw AssuanException.code(
+              AssuanErrorCode.unexpectedCmd,
+              '${request.command} is not allowed as response to INQUIRE',
+            );
+        }
+      } else {
+        throw AssuanException.code(
+          AssuanErrorCode.nestedCommands,
+          'Already processing another command',
+        );
       }
       // ignore: avoid_catches_without_on_clauses
     } catch (e, s) {
@@ -241,130 +288,17 @@ abstract class AssuanServer {
     }
   }
 
-  Future<void> _handleInquire(
-    StreamSink<String> sink,
-    AssuanRequest request,
-  ) async {
-    switch (request) {
-      case AssuanDataRequest(:final data):
-        sink.add(data);
-      case AssuanEndRequest():
-        await sink.close();
-        _pendingInquire = null;
-      case AssuanCanRequest():
-        sink.addError(
-          AssuanException.code(
-            AssuanErrorCode.canceled,
-            'Inquire was canceled',
-          ),
-          StackTrace.current,
-        );
-        await sink.close();
-        _pendingInquire = null;
-      default:
-        _handleError(
-          AssuanErrorResponse(
-            AssuanErrorCode.unexpectedCmd.code,
-            'Command ${request.command} is not allowed '
-            'as response to an INQUIRE',
-          ),
-          StackTrace.current,
-        );
-    }
-  }
-
   void _handleError(Object error, StackTrace stackTrace) {
     if (error case final Exception exception) {
       final assuanErr = mapException(exception, stackTrace);
       if (assuanErr != null) {
-        send(assuanErr);
+        _send(assuanErr);
         return;
       }
     } else {
       Zone.current.handleUncaughtError(error, stackTrace);
     }
 
-    send(AssuanErrorResponse(AssuanErrorCode.general.code));
-  }
-
-  void _sendHelp() {
-    for (final cmd in protocol.requestCommands) {
-      send(AssuanComment(cmd));
-    }
-    send(const AssuanOkResponse());
-  }
-
-  Sink<String> _getDataSink() {
-    if (_currentDataStream case final StreamController<String> ctr) {
-      return ctr.sink;
-    } else {
-      // ignore: close_sinks
-      final ctr = _currentDataStream = StreamController();
-      onData(ctr.stream);
-      return ctr.sink;
-    }
-  }
-}
-
-class _SendDataSink implements StreamSink<String> {
-  final AssuanServer _server;
-  final Completer<void> _doneCompleter;
-
-  _SendDataSink(this._server, this._doneCompleter);
-
-  @override
-  Future<void> get done => _doneCompleter.future;
-
-  @override
-  void add(String event) {
-    _ensureOpen();
-    _server.send(AssuanDataResponse(event));
-  }
-
-  @override
-  void addError(Object error, [StackTrace? stackTrace]) {
-    _ensureOpen();
-    _server._handleError(error, stackTrace ?? StackTrace.current);
-    _doneCompleter.complete();
-  }
-
-  @override
-  Future<void> addStream(Stream<String> stream) {
-    _ensureOpen();
-    final completer = Completer<void>();
-    stream.listen(
-      add,
-      onError: (Object error, StackTrace? stackTrace) {
-        addError(error, stackTrace);
-        if (!completer.isCompleted) {
-          completer.complete();
-        }
-      },
-      onDone: () {
-        if (!completer.isCompleted) {
-          completer.complete();
-        }
-      },
-      cancelOnError: true,
-    );
-    return completer.future;
-  }
-
-  @override
-  Future<void> close() {
-    if (!_doneCompleter.isCompleted) {
-      _server.send(const AssuanOkResponse());
-      _doneCompleter.complete();
-    }
-    return done;
-  }
-
-  void _ensureOpen() {
-    if (_doneCompleter.isCompleted) {
-      throw AssuanException.code(
-        AssuanErrorCode.writeError,
-        'Cannot send data after the sink was closed',
-      );
-    }
+    _send(AssuanErrorResponse(AssuanErrorCode.general.code));
   }
 }

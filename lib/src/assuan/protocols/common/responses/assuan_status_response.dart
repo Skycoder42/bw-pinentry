@@ -18,7 +18,7 @@ sealed class AssuanStatusResponse
 
   static final _keywordPattern = RegExp(r'^[a-zA-Z_][a-zA-Z0-9_]*$');
 
-  factory AssuanStatusResponse(String keyword, [String? status]) =
+  factory AssuanStatusResponse(String keyword, String status) =
       _AssuanStatusResponse;
 
   AssuanStatusResponse._() {
@@ -44,12 +44,12 @@ class AssuanStatusResponseHandler
   @override
   void encodeData(AssuanStatusResponse message, AssuanDataWriter writer) {
     writer.write(message.keyword);
-    if (message.status case final String status) {
-      writer.write(status);
+    if (message.status.isNotEmpty) {
+      writer.write(message.status);
     }
   }
 
   @override
   AssuanStatusResponse decodeData(AssuanDataReader reader) =>
-      AssuanStatusResponse(reader.read(), reader.readAll());
+      AssuanStatusResponse(reader.read(), reader.readAllOptional() ?? '');
 }
