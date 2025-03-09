@@ -39,7 +39,8 @@ sealed class PinentrySetTextRequest
 
   const PinentrySetTextRequest._();
 
-  SetCommand get setCommand => SetCommand.values.byName(command);
+  SetCommand get setCommand =>
+      SetCommand.values.singleWhere((c) => c.command == command);
 }
 
 class PinentrySetTextRequestHandler

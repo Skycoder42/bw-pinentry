@@ -3,6 +3,7 @@ import 'assuan_exception.dart';
 
 class AssuanDataReader {
   static const _space = ' ';
+  static final _nonSpacePattern = RegExp(r'\S');
 
   final String command;
   final String _data;
@@ -50,8 +51,8 @@ class AssuanDataReader {
   String readRaw({bool fixedSpace = false, bool readToEnd = false}) {
     if (_atEnd) {
       throw AssuanException.code(
-        AssuanErrorCode.incompleteLine,
-        'Unexpected end of data',
+        AssuanErrorCode.parameter,
+        'Missing a required parameter',
       );
     }
 
@@ -81,59 +82,7 @@ class AssuanDataReader {
     }
   }
 
-  int _nextNonSpaceIndex() => _data.indexOf(const NotASpacePattern(), _offset);
+  int _nextNonSpaceIndex() => _data.indexOf(_nonSpacePattern, _offset);
 
   bool get _atEnd => _offset >= _data.length;
-}
-
-class NotASpaceMatch implements Match {
-  @override
-  final NotASpacePattern pattern;
-
-  @override
-  final String input;
-
-  @override
-  final int start;
-
-  @override
-  final int end;
-
-  NotASpaceMatch(this.pattern, this.input, this.start, this.end);
-
-  @override
-  String? group(int group) => throw UnsupportedError('NotASpaceMatch');
-
-  @override
-  String? operator [](int group) => throw UnsupportedError('NotASpaceMatch');
-
-  @override
-  List<String?> groups(List<int> groupIndices) =>
-      throw UnsupportedError('NotASpaceMatch');
-
-  @override
-  int get groupCount => throw UnsupportedError('NotASpaceMatch');
-}
-
-class NotASpacePattern implements Pattern {
-  const NotASpacePattern();
-
-  @override
-  Match? matchAsPrefix(String string, [int start = 0]) {
-    for (var i = start; i < string.length; i++) {
-      if (string[i] != AssuanDataReader._space) {
-        return NotASpaceMatch(this, string, i, i + 1);
-      }
-    }
-    return null;
-  }
-
-  @override
-  Iterable<Match> allMatches(String string, [int start = 0]) sync* {
-    for (var i = start; i < string.length; i++) {
-      if (string[i] != AssuanDataReader._space) {
-        yield NotASpaceMatch(this, string, i, i + 1);
-      }
-    }
-  }
 }

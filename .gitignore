@@ -28,4 +28,5 @@ doc/api/
 .flutter-plugins-dependencies
 
 # Generated files
+lib/gen
 *.freezed.dart

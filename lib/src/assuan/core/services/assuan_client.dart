@@ -39,6 +39,7 @@ abstract class AssuanClient {
   final Duration forceCloseTimeout;
   final CloseCallback? forceCloseCallback;
 
+  late Future<void> connected;
   var _closed = false;
 
   late final StreamSubscription<AssuanResponse> _responseSub;
@@ -86,6 +87,10 @@ abstract class AssuanClient {
         'forceCloseCallback',
       );
     }
+
+    final completer = Completer<void>();
+    connected = completer.future;
+    _pendingReply = PendingReply.action(completer);
   }
 
   AssuanClient.raw(

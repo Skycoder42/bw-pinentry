@@ -19,6 +19,7 @@ import 'responses/assuan_status_response.dart';
 base class AssuanProtocol {
   final _responseHandlers =
       const <String, AssuanMessageHandler<AssuanResponse>>{
+        AssuanComment.cmd: AssuanComment.handler,
         AssuanDataMessage.cmd: AssuanDataMessage.handler,
         AssuanOkResponse.cmd: AssuanOkResponse.handler,
         AssuanErrorResponse.cmd: AssuanErrorResponse.handler,
@@ -27,6 +28,7 @@ base class AssuanProtocol {
       };
 
   final _requestHandlers = <String, AssuanMessageHandler<AssuanRequest>>{
+    AssuanComment.cmd: AssuanComment.handler,
     AssuanDataMessage.cmd: AssuanDataMessage.handler,
     AssuanByeRequest.cmd: AssuanByeRequest.handler,
     AssuanResetRequest.cmd: AssuanResetRequest.handler,

@@ -21,7 +21,7 @@ class _AssuanDataEncoderSink implements EventSink<String> {
   _AssuanDataEncoderSink(this._sink);
 
   int get _remainingBufferLen =>
-      _buffer.length - AssuanDataMessage.maxDataLength;
+      AssuanDataMessage.maxDataLength - _buffer.length;
 
   @override
   void add(String event) {

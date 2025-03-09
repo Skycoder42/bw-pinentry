@@ -3,7 +3,6 @@ import 'dart:io';
 import 'package:stream_channel/stream_channel.dart';
 
 import '../../core/protocol/base/assuan_exception.dart';
-import '../../core/protocol/requests/assuan_option_request.dart';
 import '../../core/services/assuan_client.dart';
 import '../../core/services/models/inquiry_reply.dart';
 import '../protocol/pinentry_protocol.dart';
@@ -13,11 +12,12 @@ import '../protocol/requests/pinentry_get_info_request.dart';
 import '../protocol/requests/pinentry_get_pin_request.dart';
 import '../protocol/requests/pinentry_message_request.dart';
 import '../protocol/requests/pinentry_set_gen_pin_request.dart';
+import '../protocol/requests/pinentry_set_keyinfo_request.dart';
 import '../protocol/requests/pinentry_set_repeat_request.dart';
 import '../protocol/requests/pinentry_set_text_request.dart';
 import '../protocol/requests/pinentry_set_timeout_request.dart';
 
-class PinentryClient extends AssuanClient {
+abstract class PinentryClient extends AssuanClient {
   PinentryClient(
     StreamChannel<String> channel, {
     super.terminateSignal,
@@ -48,8 +48,8 @@ class PinentryClient extends AssuanClient {
   Future<void> setText(SetCommand command, String text) =>
       sendAction(PinentrySetTextRequest(command, text));
 
-  Future<void> setDefaultText(String key, String text) =>
-      sendAction(AssuanOptionRequest('default-$key', text));
+  Future<void> setKeyinfo(String keyGrip) =>
+      sendAction(PinentrySetKeyinfoRequest(keyGrip));
 
   Future<void> enableQualityBar() =>
       sendAction(const PinentryEnableQualityBarRequest());
@@ -76,14 +76,6 @@ class PinentryClient extends AssuanClient {
   Future<void> showMessage() => sendAction(const PinentryMessageRequest());
 
   @override
-  Future<void> onStatus(String keyword, String status) {
-    // TODO: implement onStatus
-    throw UnimplementedError();
-  }
-
-  @override
-  Future<InquiryReply> onInquire(String keyword, List<String> parameters) {
-    // TODO: implement onInquire
-    throw UnimplementedError();
-  }
+  Future<InquiryReply> onInquire(String keyword, List<String> parameters) =>
+      Future.value(const InquiryReply.cancel());
 }

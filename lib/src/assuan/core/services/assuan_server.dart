@@ -33,7 +33,6 @@ import 'models/server_reply.dart';
 abstract class AssuanServer {
   final AssuanProtocol protocol;
   final StreamChannel<String> channel;
-  final bool exitOnClose;
 
   var _closed = false;
 
@@ -44,7 +43,7 @@ abstract class AssuanServer {
   // ignore: close_sinks false positive
   StreamController<AssuanDataMessage>? _pendingInquire;
 
-  AssuanServer(this.protocol, this.channel, {this.exitOnClose = false}) {
+  AssuanServer(this.protocol, this.channel) {
     _responseSink = channel.sink
         .transform(
           StreamSinkTransformer.fromStreamTransformer(
@@ -66,17 +65,17 @@ abstract class AssuanServer {
           onDone: close,
           cancelOnError: false,
         );
+
+    unawaited(init().catchError(_handleError));
   }
 
   AssuanServer.raw(
     AssuanProtocol protocol,
     StreamChannel<List<int>> channel, {
     Encoding encoding = utf8,
-    bool exitOnClose = false,
   }) : this(
          protocol,
          channel.transform(StreamChannelTransformer.fromCodec(encoding)),
-         exitOnClose: exitOnClose,
        );
 
   AssuanServer.io(
@@ -84,12 +83,10 @@ abstract class AssuanServer {
     Stdin stdin,
     Stdout stdout, {
     Encoding encoding = systemEncoding,
-    bool exitOnClose = false,
   }) : this.raw(
          protocol,
          StreamChannel.withGuarantees(stdin, stdout, allowSinkErrors: false),
          encoding: encoding,
-         exitOnClose: exitOnClose,
        );
 
   @nonVirtual
@@ -107,11 +104,6 @@ abstract class AssuanServer {
       _requestSub.cancel(),
       _responseSink.close(),
     ]);
-
-    // TODO remove if not needed
-    if (exitOnClose) {
-      Future(() => exit(0)).ignore();
-    }
   }
 
   @protected
@@ -155,6 +147,10 @@ abstract class AssuanServer {
     final stream = startInquire(keyword, parameters);
     return stream.join();
   }
+
+  @protected
+  @mustCallSuper
+  Future<void> init() async => _send(const AssuanOkResponse());
 
   @protected
   Future<void> setOption(String name, String? value);
@@ -243,7 +239,7 @@ abstract class AssuanServer {
   Future<void> _sendStream(Stream<String> stream, String? doneMessage) => stream
       .transform(const AssuanDataEncoder())
       .listen(_send)
-      .asFuture(doneMessage)
+      .asFuture<String?>(doneMessage)
       .then((message) => _send(AssuanOkResponse(message)));
 
   void _sendHelp() {
