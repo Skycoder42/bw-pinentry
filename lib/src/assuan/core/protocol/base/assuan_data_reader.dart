@@ -4,10 +4,11 @@ import 'assuan_exception.dart';
 class AssuanDataReader {
   static const _space = ' ';
 
+  final String command;
   final String _data;
   int _offset;
 
-  AssuanDataReader(this._data, this._offset);
+  AssuanDataReader(this.command, this._data, this._offset);
 
   bool hasMoreData({bool fixedSpace = false}) =>
       !_atEnd && (fixedSpace || _nextNonSpaceIndex() != -1);

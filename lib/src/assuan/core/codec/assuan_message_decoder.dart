@@ -55,7 +55,7 @@ sealed class AssuanMessageDecoder<T extends AssuanMessage>
       );
     }
 
-    final reader = AssuanDataReader(line, offset);
+    final reader = AssuanDataReader(command, line, offset);
     return handler.decodeData(reader);
   }
 
