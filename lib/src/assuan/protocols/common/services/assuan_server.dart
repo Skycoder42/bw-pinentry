@@ -8,21 +8,22 @@ import 'package:meta/meta.dart';
 import 'package:stream_channel/stream_channel.dart';
 
 import '../../../core/codec/assuan_codec.dart';
+import '../../../core/codec/assuan_data_decoder.dart';
+import '../../../core/codec/assuan_data_encoder.dart';
 import '../../../core/models/assuan_error_code.dart';
 import '../../../core/models/assuan_exception.dart';
 import '../../../core/models/assuan_message.dart';
 import '../../../core/util/auto_newline_converter.dart';
 import '../assuan_comment.dart';
 import '../assuan_common_protocol.dart';
+import '../assuan_data_message.dart';
 import '../requests/assuan_bye_request.dart';
-import '../requests/assuan_can_request.dart';
-import '../requests/assuan_data_request.dart';
+import '../requests/assuan_cancel_request.dart';
 import '../requests/assuan_end_request.dart';
 import '../requests/assuan_help_request.dart';
 import '../requests/assuan_nop_request.dart';
 import '../requests/assuan_option_request.dart';
 import '../requests/assuan_reset_request.dart';
-import '../responses/assuan_data_response.dart';
 import '../responses/assuan_error_response.dart';
 import '../responses/assuan_inquire_response.dart';
 import '../responses/assuan_ok_response.dart';
@@ -41,7 +42,7 @@ abstract class AssuanServer {
   var _processingRequest = false;
 
   // ignore: close_sinks false positive
-  StreamController<String>? _pendingInquire;
+  StreamController<AssuanDataMessage>? _pendingInquire;
 
   AssuanServer(this.protocol, this.channel, {this.exitOnClose = false}) {
     _responseSink = channel.sink
@@ -145,7 +146,7 @@ abstract class AssuanServer {
     // ignore: close_sinks
     final ctr = _pendingInquire = StreamController();
     _send(AssuanInquireResponse(keyword, parameters));
-    return ctr.stream;
+    return ctr.stream.transform(const AssuanDataDecoder());
   }
 
   @protected
@@ -169,7 +170,7 @@ abstract class AssuanServer {
       closing ? 'Connection was closed' : 'Connection was reset',
     );
 
-    if (_pendingInquire case final StreamController<String> ctr) {
+    if (_pendingInquire case final StreamController<AssuanDataMessage> ctr) {
       _pendingInquire = null;
       ctr.addError(error);
       await ctr.close();
@@ -213,7 +214,7 @@ abstract class AssuanServer {
           _send(const AssuanOkResponse());
         case AssuanNopRequest():
           _send(const AssuanOkResponse());
-        case AssuanDataRequest() || AssuanEndRequest() || AssuanCanRequest():
+        case AssuanDataMessage() || AssuanEndRequest() || AssuanCancelRequest():
           throw AssuanException.code(
             AssuanErrorCode.unexpectedCmd,
             '${request.command} is only allowed as response to INQUIRE',
@@ -240,17 +241,7 @@ abstract class AssuanServer {
   void _send(AssuanResponse response) => _responseSink.add(response);
 
   Future<void> _sendStream(Stream<String> stream, String? doneMessage) => stream
-      // TODO move to transformer
-      .map(Uri.encodeFull)
-      .expand((s) sync* {
-        var offset = 0;
-        while ((s.length - offset) > 998) {
-          yield s.substring(offset, offset + 998);
-          offset += 998;
-        }
-        yield s.substring(offset);
-      })
-      .map(AssuanDataResponse.new)
+      .transform(const AssuanDataEncoder())
       .listen(_send)
       .asFuture(doneMessage)
       .then((message) => _send(AssuanOkResponse(message)));
@@ -264,15 +255,14 @@ abstract class AssuanServer {
 
   Future<void> _handleInquiry(AssuanRequest request) async {
     try {
-      if (_pendingInquire case StreamController<String>(:final sink)) {
+      if (_pendingInquire case StreamController(:final sink)) {
         switch (request) {
-          case AssuanDataRequest(:final data):
-            // TODO decode data -> transformer
-            sink.add(data);
+          case final AssuanDataMessage message:
+            sink.add(message);
           case AssuanEndRequest():
             await sink.close();
             _pendingInquire = null;
-          case AssuanCanRequest():
+          case AssuanCancelRequest():
             sink.addError(
               AssuanException.code(
                 AssuanErrorCode.canceled,
