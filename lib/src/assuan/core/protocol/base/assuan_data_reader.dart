@@ -101,10 +101,7 @@ class NotASpaceMatch implements Match {
   NotASpaceMatch(this.pattern, this.input, this.start, this.end);
 
   @override
-  String? group(int group) {
-    // TODO: implement group
-    throw UnimplementedError();
-  }
+  String? group(int group) => throw UnsupportedError('NotASpaceMatch');
 
   @override
   String? operator [](int group) => throw UnsupportedError('NotASpaceMatch');

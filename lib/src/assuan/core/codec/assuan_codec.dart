@@ -2,8 +2,8 @@ import 'dart:convert';
 
 import 'package:meta/meta.dart';
 
-import '../models/assuan_message.dart';
-import '../models/assuan_protocol.dart';
+import '../protocol/assuan_protocol.dart';
+import '../protocol/base/assuan_message.dart';
 import 'assuan_message_decoder.dart';
 import 'assuan_message_encoder.dart';
 

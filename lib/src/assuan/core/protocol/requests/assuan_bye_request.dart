@@ -1,7 +1,7 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 
-import '../../../core/models/assuan_message.dart';
-import '../../../core/models/assuan_message_handler.dart';
+import '../base/assuan_message.dart';
+import '../base/assuan_message_handler.dart';
 
 part 'assuan_bye_request.freezed.dart';
 

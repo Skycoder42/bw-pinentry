@@ -6,34 +6,34 @@ import 'package:async/async.dart';
 import 'package:meta/meta.dart';
 import 'package:stream_channel/stream_channel.dart';
 
-import '../../../core/codec/assuan_codec.dart';
-import '../../../core/codec/assuan_data_decoder.dart';
-import '../../../core/codec/assuan_data_encoder.dart';
-import '../../../core/models/assuan_error_code.dart';
-import '../../../core/models/assuan_exception.dart';
-import '../../../core/models/assuan_message.dart';
-import '../../../core/util/auto_newline_converter.dart';
-import '../assuan_common_protocol.dart';
-import '../assuan_data_message.dart';
-import '../requests/assuan_bye_request.dart';
-import '../requests/assuan_cancel_request.dart';
-import '../requests/assuan_end_request.dart';
-import '../requests/assuan_nop_request.dart';
-import '../requests/assuan_option_request.dart';
-import '../requests/assuan_reset_request.dart';
-import '../responses/assuan_error_response.dart';
-import '../responses/assuan_inquire_response.dart';
-import '../responses/assuan_ok_response.dart';
-import '../responses/assuan_status_response.dart';
-import 'inquiry_reply.dart';
-import 'pending_reply.dart';
+import '../codec/assuan_codec.dart';
+import '../codec/assuan_data_decoder.dart';
+import '../codec/assuan_data_encoder.dart';
+import '../codec/auto_newline_converter.dart';
+import '../protocol/assuan_data_message.dart';
+import '../protocol/assuan_protocol.dart';
+import '../protocol/base/assuan_error_code.dart';
+import '../protocol/base/assuan_exception.dart';
+import '../protocol/base/assuan_message.dart';
+import '../protocol/requests/assuan_bye_request.dart';
+import '../protocol/requests/assuan_cancel_request.dart';
+import '../protocol/requests/assuan_end_request.dart';
+import '../protocol/requests/assuan_nop_request.dart';
+import '../protocol/requests/assuan_option_request.dart';
+import '../protocol/requests/assuan_reset_request.dart';
+import '../protocol/responses/assuan_error_response.dart';
+import '../protocol/responses/assuan_inquire_response.dart';
+import '../protocol/responses/assuan_ok_response.dart';
+import '../protocol/responses/assuan_status_response.dart';
+import 'models/inquiry_reply.dart';
+import 'models/pending_reply.dart';
 
 typedef CloseCallback = Future<void> Function();
 
 abstract class AssuanClient {
   static const defaultForceCloseTimeout = Duration(seconds: 5);
 
-  final AssuanCommonProtocol protocol;
+  final AssuanProtocol protocol;
   final StreamChannel<String> channel;
   final Future<void>? terminateSignal;
   final Duration forceCloseTimeout;
@@ -89,7 +89,7 @@ abstract class AssuanClient {
   }
 
   AssuanClient.raw(
-    AssuanCommonProtocol protocol,
+    AssuanProtocol protocol,
     StreamChannel<List<int>> channel, {
     Encoding encoding = utf8,
     Future<void>? terminateSignal,
@@ -104,7 +104,7 @@ abstract class AssuanClient {
        );
 
   AssuanClient.process(
-    AssuanCommonProtocol protocol,
+    AssuanProtocol protocol,
     Process process, {
     Encoding encoding = systemEncoding,
     Duration forceCloseTimeout = defaultForceCloseTimeout,
@@ -215,6 +215,11 @@ abstract class AssuanClient {
           _handleData(response);
         case AssuanInquireResponse(:final keyword, :final parameters):
           await _handleInquire(keyword, parameters);
+        default:
+          throw AssuanException.code(
+            AssuanErrorCode.unknownCmd,
+            'Unknown command <${response.command}>',
+          );
       }
       // ignore: avoid_catches_without_on_clauses
     } catch (e, s) {

@@ -2,12 +2,12 @@ import 'dart:convert';
 
 import 'package:meta/meta.dart';
 
-import '../models/assuan_data_writer.dart';
-import '../models/assuan_error_code.dart';
-import '../models/assuan_exception.dart';
-import '../models/assuan_message.dart';
-import '../models/assuan_message_handler.dart';
-import '../models/assuan_protocol.dart';
+import '../protocol/assuan_protocol.dart';
+import '../protocol/base/assuan_data_writer.dart';
+import '../protocol/base/assuan_error_code.dart';
+import '../protocol/base/assuan_exception.dart';
+import '../protocol/base/assuan_message.dart';
+import '../protocol/base/assuan_message_handler.dart';
 import 'converter_sink.dart';
 
 class AssuanRequestEncoder extends AssuanMessageEncoder<AssuanRequest> {

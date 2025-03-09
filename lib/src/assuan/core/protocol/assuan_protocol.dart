@@ -1,10 +1,9 @@
 import 'package:meta/meta.dart';
 
-import '../../core/models/assuan_message.dart';
-import '../../core/models/assuan_message_handler.dart';
-import '../../core/models/assuan_protocol.dart';
 import 'assuan_comment.dart';
 import 'assuan_data_message.dart';
+import 'base/assuan_message.dart';
+import 'base/assuan_message_handler.dart';
 import 'requests/assuan_bye_request.dart';
 import 'requests/assuan_cancel_request.dart';
 import 'requests/assuan_end_request.dart';
@@ -17,7 +16,16 @@ import 'responses/assuan_inquire_response.dart';
 import 'responses/assuan_ok_response.dart';
 import 'responses/assuan_status_response.dart';
 
-class AssuanCommonProtocol implements AssuanProtocol {
+base class AssuanProtocol {
+  final _responseHandlers =
+      const <String, AssuanMessageHandler<AssuanResponse>>{
+        AssuanDataMessage.cmd: AssuanDataMessage.handler,
+        AssuanOkResponse.cmd: AssuanOkResponse.handler,
+        AssuanErrorResponse.cmd: AssuanErrorResponse.handler,
+        AssuanStatusResponse.cmd: AssuanStatusResponse.handler,
+        AssuanInquireResponse.cmd: AssuanInquireResponse.handler,
+      };
+
   final _requestHandlers = <String, AssuanMessageHandler<AssuanRequest>>{
     AssuanDataMessage.cmd: AssuanDataMessage.handler,
     AssuanByeRequest.cmd: AssuanByeRequest.handler,
@@ -29,42 +37,29 @@ class AssuanCommonProtocol implements AssuanProtocol {
     AssuanCancelRequest.cmd: AssuanCancelRequest.handler,
   };
 
-  final _responseHandlers = <String, AssuanMessageHandler<AssuanResponse>>{
-    AssuanDataMessage.cmd: AssuanDataMessage.handler,
-    AssuanOkResponse.cmd: AssuanOkResponse.handler,
-    AssuanErrorResponse.cmd: AssuanErrorResponse.handler,
-    AssuanStatusResponse.cmd: AssuanStatusResponse.handler,
-    AssuanInquireResponse.cmd: AssuanInquireResponse.handler,
-  };
-
-  AssuanCommonProtocol({
+  AssuanProtocol([
     Map<String, AssuanMessageHandler<AssuanRequest>> requestHandlers = const {},
-    Map<String, AssuanMessageHandler<AssuanResponse>> responseHandlers =
-        const {},
-  }) {
+  ]) {
     _requestHandlers.addAll(requestHandlers);
-    _responseHandlers.addAll(responseHandlers);
   }
 
-  @override
+  @nonVirtual
   Iterable<String> get requestCommands => _requestHandlers.keys;
 
-  @override
+  @nonVirtual
   Iterable<String> get responseCommands => _responseHandlers.keys;
 
   @nonVirtual
-  @override
   AssuanMessageHandler<AssuanRequest>? requestHandler(String command) =>
       _requestHandlers[command];
 
   @nonVirtual
-  @override
   AssuanMessageHandler<AssuanResponse>? responseHandler(String command) =>
       _responseHandlers[command];
 
-  @override
+  @nonVirtual
   String get commentPrefix => AssuanComment.cmd;
 
-  @override
+  @nonVirtual
   AssuanComment createComment(String comment) => AssuanComment(comment);
 }

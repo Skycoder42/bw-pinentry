@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import '../../protocols/common/assuan_data_message.dart';
+import '../protocol/assuan_data_message.dart';
 
 class AssuanDataDecoder
     extends StreamTransformerBase<AssuanDataMessage, String> {

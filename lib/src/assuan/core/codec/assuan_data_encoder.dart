@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:math';
 
-import '../../protocols/common/assuan_data_message.dart';
+import '../protocol/assuan_data_message.dart';
 
 class AssuanDataEncoder
     extends StreamTransformerBase<String, AssuanDataMessage> {
