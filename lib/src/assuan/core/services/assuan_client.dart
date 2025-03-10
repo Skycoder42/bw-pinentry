@@ -151,6 +151,7 @@ abstract class AssuanClient {
         _forceCloseTimer = Timer(forceCloseTimeout, callback);
       }
       await sendAction(const AssuanByeRequest());
+      await terminateSignal?.timeout(forceCloseTimeout);
     } finally {
       await _cleanup(force: true);
     }

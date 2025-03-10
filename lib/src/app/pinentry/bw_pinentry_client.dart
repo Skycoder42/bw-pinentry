@@ -9,8 +9,12 @@ class BwPinentryClient extends PinentryClient {
 
   BwPinentryClient._(this._server, super.process) : super.process();
 
-  static Future<BwPinentryClient> start(BwPinentryServer server) async {
-    final proc = await Process.start('/usr/bin/pinentry-qt', const []);
+  static Future<BwPinentryClient> start(
+    BwPinentryServer server,
+    String pinentry,
+    List<String> arguments,
+  ) async {
+    final proc = await Process.start(pinentry, arguments);
     final client = BwPinentryClient._(server, proc);
     try {
       await client.connected;

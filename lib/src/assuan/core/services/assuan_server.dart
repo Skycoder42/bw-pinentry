@@ -62,7 +62,10 @@ abstract class AssuanServer {
         .listen(
           _handleRequest,
           onError: _handleError,
-          onDone: close,
+          onDone: () {
+            stderr.writeln('onDone');
+            close();
+          },
           cancelOnError: false,
         );
 
@@ -92,13 +95,21 @@ abstract class AssuanServer {
   @nonVirtual
   bool get isOpen => !_closed;
 
-  @mustCallSuper
-  Future<void> close() async {
+  @nonVirtual
+  Future<void> close({bool clientInitiated = false}) async {
     if (_closed) {
       return;
     }
     _closed = true;
 
+    await finalize();
+
+    if (clientInitiated) {
+      await Future.delayed(const Duration(seconds: 5));
+      _send(const AssuanOkResponse());
+    }
+
+    stderr.writeln('CLEANING UP!!!');
     await Future.wait([
       reset(closing: true),
       _requestSub.cancel(),
@@ -153,6 +164,10 @@ abstract class AssuanServer {
   Future<void> init() async => _send(const AssuanOkResponse());
 
   @protected
+  @mustCallSuper
+  Future<void> finalize() => Future.value();
+
+  @protected
   Future<void> setOption(String name, String? value);
 
   @protected
@@ -189,6 +204,7 @@ abstract class AssuanServer {
   }
 
   Future<void> _handleRequest(AssuanRequest request) async {
+    stderr.writeln('onData: ${request.command}');
     if (_processingRequest) {
       await _handleInquiry(request);
       return;
@@ -198,8 +214,7 @@ abstract class AssuanServer {
       _processingRequest = true;
       switch (request) {
         case AssuanByeRequest():
-          _send(const AssuanOkResponse());
-          await close();
+          await close(clientInitiated: true);
         case AssuanResetRequest():
           await reset();
           _send(const AssuanOkResponse());

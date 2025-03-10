@@ -7,20 +7,30 @@ import 'dart:io';
 import 'package:async/async.dart';
 
 void main(List<String> args) async {
-  final logFile = File('/tmp/pinentry-log');
+  final logFile = File('/tmp/pinentry.log');
   // ignore: close_sinks
   final logFileSink = logFile.openWrite();
   try {
     logFileSink.writeln('STARTED: $args');
-    final pinentry = await Process.start('/usr/bin/pinentry-qt', args);
+    final pinentry = await Process.start(
+      '/home/sky/repo/dart-packages/bw-pinentry/bin/bw_pinentry.exe',
+      args,
+    );
 
     await Future.wait([
-      stdin.tee(_lineWrapped('IN ', logFileSink)).pipe(pinentry.stdin),
-      pinentry.stdout.tee(_lineWrapped('OUT', logFileSink)).pipe(stdout),
-      pinentry.stderr.tee(_lineWrapped('ERR', logFileSink)).pipe(stderr),
+      pinentry.stdin
+          .addStream(stdin.tee(_lineWrapped('IN ', logFileSink)))
+          .whenComplete(() => logFileSink.writeln('IN: <<DONE>>')),
+      stdout
+          .addStream(pinentry.stdout.tee(_lineWrapped('OUT', logFileSink)))
+          .whenComplete(() => logFileSink.writeln('OUT: <<DONE>>')),
+      stderr
+          .addStream(pinentry.stderr.tee(_lineWrapped('ERR', logFileSink)))
+          .whenComplete(() => logFileSink.writeln('ERR: <<DONE>>')),
     ]);
 
     exitCode = await pinentry.exitCode;
+    logFileSink.writeln('EXIT: $exitCode');
   } finally {
     await logFileSink.flush();
     await logFileSink.close();
