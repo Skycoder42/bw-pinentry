@@ -1,3 +1,4 @@
+import '../../codec/assuan_percent_codec.dart';
 import 'assuan_error_code.dart';
 import 'assuan_exception.dart';
 
@@ -8,7 +9,10 @@ class AssuanDataWriter {
 
   void write<T extends Object>(T object, {bool autoSpace = true}) =>
       switch (object) {
-        String() => writeRaw(Uri.encodeFull(object), autoSpace: autoSpace),
+        String() => writeRaw(
+          assuanPercentCodec.encode(object),
+          autoSpace: autoSpace,
+        ),
         num() || bool() => writeRaw(object.toString(), autoSpace: autoSpace),
         _ =>
           throw AssuanException.code(

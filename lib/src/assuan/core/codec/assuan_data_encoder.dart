@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:math';
 
 import '../protocol/assuan_data_message.dart';
+import 'assuan_percent_codec.dart';
 
 class AssuanDataEncoder
     extends StreamTransformerBase<String, AssuanDataMessage> {
@@ -76,7 +77,7 @@ class _AssuanDataEncoderSink implements EventSink<String> {
   }
 
   void _addEscaped(String char) {
-    final escaped = Uri.encodeFull(char);
+    final escaped = assuanPercentCodec.encode(char);
     if (escaped.length > _remainingBufferLen) {
       _sink.add(AssuanDataMessage(_buffer.toString()));
       _buffer.clear();

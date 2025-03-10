@@ -1,3 +1,4 @@
+import '../../codec/assuan_percent_codec.dart';
 import 'assuan_error_code.dart';
 import 'assuan_exception.dart';
 
@@ -17,7 +18,7 @@ class AssuanDataReader {
   T read<T extends Object>({bool fixedSpace = false}) {
     final raw = readRaw(fixedSpace: fixedSpace);
     return switch (T) {
-      const (String) => Uri.decodeFull(raw) as T,
+      const (String) => assuanPercentCodec.decode(raw) as T,
       const (int) => int.parse(raw) as T,
       const (double) => double.parse(raw) as T,
       const (bool) => bool.parse(raw) as T,
@@ -31,7 +32,7 @@ class AssuanDataReader {
 
   String readAll({bool fixedSpace = false}) {
     final raw = readRaw(fixedSpace: fixedSpace, readToEnd: true);
-    return Uri.decodeFull(raw);
+    return assuanPercentCodec.decode(raw);
   }
 
   T? readOptional<T extends Object>({bool fixedSpace = false}) {

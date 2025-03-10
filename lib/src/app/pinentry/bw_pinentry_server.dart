@@ -1,7 +1,5 @@
-import 'dart:io';
+import 'package:meta/meta.dart';
 
-// ignore: no_self_package_imports
-import '../../../gen/package_metadata.dart' as metadata;
 import '../../assuan/core/protocol/base/assuan_error_code.dart';
 import '../../assuan/core/protocol/base/assuan_exception.dart';
 import '../../assuan/core/protocol/base/assuan_message.dart';
@@ -18,52 +16,98 @@ import '../../assuan/pinentry/protocol/requests/pinentry_set_text_request.dart';
 import '../../assuan/pinentry/protocol/requests/pinentry_set_timeout_request.dart';
 import '../../assuan/pinentry/services/pinentry_server.dart';
 import 'bw_pinentry_client.dart';
+import 'bw_status.dart';
 
 final class BwPinentryServer extends PinentryServer {
-  final _optionsCache = <String, String?>{};
+  late final BwPinentryClient _client;
+
   final _textCache = <SetCommand, String>{};
-  Duration? _timeout;
-  var _showQualityBar = false;
-  var _enableGenPin = false;
-  var _repeatPin = false;
   String? _keyGrip;
 
   BwPinentryServer(super.stdin, super.stdout) : super.io();
 
-  Stream<String> forwardInquiry(String keyword, List<String> parameters) =>
-      startInquire(keyword, parameters);
+  Stream<String> forwardInquiry(String keyword, List<String> parameters) {
+    sendComment('Forwarding INQUIRE $keyword $parameters');
+    return startInquire(keyword, parameters);
+  }
 
-  void forwardStatus(String keyword, String status) =>
-      sendStatus(keyword, status);
-
-  @override
-  Future<void> setOption(String name, String? value) {
-    _optionsCache[name] = value;
-    return Future.value();
+  void forwardStatus(String keyword, String status) {
+    sendComment('Forwarding STATUS $keyword $status');
+    sendStatus(keyword, status);
   }
 
   @override
+  @protected
+  Future<void> init() async {
+    _sendBwStatus(
+      const BwStatus.proxy('Server ready. Starting proxied pinentry...'),
+    );
+    _client = await BwPinentryClient.start(this);
+    _sendBwStatus(const BwStatus.proxy('Proxy is ready.'));
+    return super.init();
+  }
+
+  @override
+  @protected
+  Future<void> setOption(String name, String? value) {
+    sendComment('Forwarding OPTION $name = $value');
+    return _client.setOption(name, value);
+  }
+
+  @override
+  @protected
+  Future<void> reset({bool closing = false}) async {
+    if (!closing) {
+      _textCache.clear();
+      _keyGrip = null;
+      sendComment('Forwarding RESET');
+      await _client.reset();
+    }
+    await super.reset(closing: closing);
+  }
+
+  @override
+  @protected
+  Future<void> close() async {
+    sendComment('Forwarding BYE');
+    await _client.close();
+    sendComment('Client terminated');
+    await super.close();
+  }
+
+  @override
+  @protected
   Future<ServerReply> handleRequest(AssuanRequest request) async {
     switch (request) {
       case PinentryGetInfoRequest(:final key):
-        return _handleGetInfo(key);
+        sendComment('Forwarding ${request.command} $key');
+        final info = await _client.getInfo(key);
+        return ServerReply.data(info);
       case PinentrySetTextRequest(:final setCommand, :final text):
         _textCache[setCommand] = text;
+        sendComment('Forwarding ${request.command} $text');
+        await _client.setText(setCommand, text);
         return const OkReply();
       case PinentrySetTimeoutRequest(:final timeout):
-        _timeout = timeout;
+        sendComment('Forwarding ${request.command} $timeout');
+        await _client.setTimeout(timeout);
         return const OkReply();
       case PinentryEnableQualityBarRequest():
-        _showQualityBar = true;
+        sendComment('Forwarding ${request.command}');
+        await _client.enableQualityBar();
         return const OkReply();
       case PinentrySetGenPinRequest():
-        _enableGenPin = true;
+        sendComment('Forwarding ${request.command}');
+        await _client.enablePinGeneration();
         return const OkReply();
       case PinentrySetRepeatRequest():
-        _repeatPin = true;
+        sendComment('Forwarding ${request.command}');
+        await _client.enableRepeat();
         return const OkReply();
       case PinentrySetKeyinfoRequest(:final keyGrip):
         _keyGrip = keyGrip;
+        sendComment('Forwarding ${request.command} $keyGrip');
+        await _client.setKeyinfo(keyGrip);
         return const OkReply();
       case PinentryMessageRequest():
       case PinentryConfirmRequest(oneButton: true):
@@ -71,7 +115,6 @@ final class BwPinentryServer extends PinentryServer {
       case PinentryConfirmRequest(oneButton: false):
         return _confirm();
       case PinentryGetPinRequest():
-        // TODO use bitwarden!
         return _getPin();
       default:
         throw AssuanException.code(
@@ -81,98 +124,52 @@ final class BwPinentryServer extends PinentryServer {
     }
   }
 
-  @override
-  Future<void> reset({bool closing = false}) {
-    _optionsCache.clear();
-    _textCache.clear();
-    _timeout = null;
-    _showQualityBar = false;
-    _enableGenPin = false;
-    _repeatPin = false;
-    _keyGrip = null;
-    return super.reset(closing: closing);
-  }
-
-  ServerReply _handleGetInfo(PinentryInfoKey key) => switch (key) {
-    PinentryInfoKey.flavor => const ServerReply.data('bitwarden'),
-    PinentryInfoKey.version => const ServerReply.data(metadata.version),
-    // ttyname ttytype display devicestat uid/gid emacs
-    PinentryInfoKey.ttyinfo => const ServerReply.data('- - - - 0/0 -'),
-    PinentryInfoKey.pid => ServerReply.data(pid.toString()),
-  };
+  void _sendBwStatus(BwStatus status) =>
+      sendStatus(status.keyword, status.status);
 
   Future<ServerReply> _showMessage() async {
-    final client = await _initClient();
-    try {
-      sendComment('Forwarding MESSAGE');
-      await client.showMessage();
-      return const ServerReply.ok();
-    } finally {
-      await client.close();
-    }
+    sendComment('Forwarding MESSAGE');
+    await _client.showMessage();
+    return const ServerReply.ok();
   }
 
   Future<ServerReply> _confirm() async {
-    final client = await _initClient();
-    try {
-      sendComment('Forwarding CONFIRM');
-      final response = await client.confirm();
-      if (!response) {
-        throw AssuanException(
-          'prompt was not confirmed',
-          PinentryConfirmRequest.notConfirmedCode,
-        );
-      }
-      return const ServerReply.ok();
-    } finally {
-      await client.close();
+    sendComment('Forwarding CONFIRM');
+    final response = await _client.confirm();
+    if (!response) {
+      throw AssuanException(
+        'prompt was not confirmed',
+        PinentryConfirmRequest.notConfirmedCode,
+      );
     }
+    return const ServerReply.ok();
   }
 
   Future<ServerReply> _getPin() async {
-    final client = await _initClient();
-    try {
-      sendComment('Forwarding GETPIN');
-      final pin = await client.getPin();
-      return ServerReply.data(pin);
-    } finally {
-      await client.close();
+    if (_keyGrip case final String keyGrip) {
+      final passphrase = await _getBitwardenKey(keyGrip);
+      if (passphrase != null) {
+        return ServerReply.data(passphrase);
+      } else {
+        await _resetClientTexts();
+      }
     }
+
+    sendComment('Forwarding GETPIN');
+    final pin = await _client.getPin();
+    return ServerReply.data(pin);
   }
 
-  Future<BwPinentryClient> _initClient() async {
+  Future<void> _resetClientTexts() async {
     final client = await BwPinentryClient.start(this);
-    sendComment('Starting real pinentry');
-    await client.connected;
-    // set all parameters
-    for (final MapEntry(:key, :value) in _optionsCache.entries) {
-      sendComment('Forwarding OPTION $key = $value');
-      await client.setOption(key, value);
-    }
     for (final MapEntry(:key, :value) in _textCache.entries) {
       sendComment('Forwarding ${key.command} $value');
       await client.setText(key, value);
     }
-    if (_timeout case final Duration timeout) {
-      sendComment('Forwarding SETTIMEOUT $timeout');
-      await client.setTimeout(timeout);
-    }
-    if (_showQualityBar) {
-      sendComment('Forwarding SETQUALITYBAR');
-      await client.enableQualityBar();
-    }
-    if (_enableGenPin) {
-      sendComment('Forwarding SETGENPIN');
-      await client.enablePinGeneration();
-    }
-    if (_repeatPin) {
-      sendComment('Forwarding SETREPEAT');
-      await client.enableRepeat();
-    }
-    if (_keyGrip case final String keyGrip) {
-      sendComment('Forwarding SETKEYINFO');
-      await client.setKeyinfo(keyGrip);
-    }
-    return client;
+  }
+
+  Future<String?> _getBitwardenKey(String keyGrip) async {
+    final ok = await _client.confirm();
+    return ok ? keyGrip : null;
   }
 }
