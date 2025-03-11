@@ -70,13 +70,7 @@ final class BwPinentryServer extends PinentryServer {
   @override
   @protected
   Future<void> finalize() async {
-    await Future.delayed(const Duration(seconds: 3));
-    sendComment('Requesting proxy termination...');
-    await Future.delayed(const Duration(seconds: 3));
-    // await _client.close();
-    await Future.delayed(const Duration(seconds: 3));
-    sendComment('Proxy terminated');
-    await Future.delayed(const Duration(seconds: 3));
+    await _client.close();
     await super.finalize();
   }
 

@@ -62,10 +62,7 @@ abstract class AssuanServer {
         .listen(
           _handleRequest,
           onError: _handleError,
-          onDone: () {
-            stderr.writeln('onDone');
-            close();
-          },
+          onDone: close,
           cancelOnError: false,
         );
 
@@ -105,11 +102,9 @@ abstract class AssuanServer {
     await finalize();
 
     if (clientInitiated) {
-      await Future.delayed(const Duration(seconds: 5));
       _send(const AssuanOkResponse());
     }
 
-    stderr.writeln('CLEANING UP!!!');
     await Future.wait([
       reset(closing: true),
       _requestSub.cancel(),
@@ -204,7 +199,6 @@ abstract class AssuanServer {
   }
 
   Future<void> _handleRequest(AssuanRequest request) async {
-    stderr.writeln('onData: ${request.command}');
     if (_processingRequest) {
       await _handleInquiry(request);
       return;
