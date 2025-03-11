@@ -36,7 +36,7 @@ abstract class AssuanServer {
 
   var _closed = false;
 
-  late final StreamSubscription<AssuanRequest> _requestSub;
+  late final StreamSubscription<void> _requestSub;
   late final StreamSink<AssuanResponse> _responseSink;
   var _processingRequest = false;
 
@@ -59,14 +59,16 @@ abstract class AssuanServer {
     _requestSub = channel.stream
         .transform(const LineSplitter())
         .transform(AssuanRequestCodec(protocol).decoder)
+        .asyncMap(_handleRequest)
         .listen(
-          _handleRequest,
+          null,
           onError: _handleError,
           onDone: close,
           cancelOnError: false,
         );
 
-    unawaited(init().catchError(_handleError));
+    // ignore: discarded_futures
+    _requestSub.pause(init().catchError(_handleError));
   }
 
   AssuanServer.raw(

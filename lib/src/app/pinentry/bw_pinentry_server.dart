@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:async/async.dart';
 import 'package:meta/meta.dart';
 
 import '../../assuan/core/protocol/base/assuan_error_code.dart';
@@ -16,9 +17,9 @@ import '../../assuan/pinentry/protocol/requests/pinentry_set_keyinfo_request.dar
 import '../../assuan/pinentry/protocol/requests/pinentry_set_repeat_request.dart';
 import '../../assuan/pinentry/protocol/requests/pinentry_set_text_request.dart';
 import '../../assuan/pinentry/protocol/requests/pinentry_set_timeout_request.dart';
-import '../../assuan/pinentry/services/pinentry_client.dart';
 import '../../assuan/pinentry/services/pinentry_server.dart';
 import '../bitwarden/bitwarden_cli.dart';
+import '../bitwarden/models/bw_object.dart';
 import '../bitwarden/models/bw_status.dart';
 import 'bw_pinentry_client.dart';
 
@@ -157,39 +158,67 @@ final class BwPinentryServer extends PinentryServer {
   }
 
   Future<String?> _getBitwardenKey(String keyGrip) async {
+    try {
+      await _bwCli.sync();
+      if (!await _ensureUnlocked()) {
+        return null;
+      }
+
+      sendComment('Searching for folder to narrow down search');
+      final folder = await _bwCli.listFolders(search: 'GPG-Keys').firstOrNull;
+      sendComment('Searching for items within folder: ${folder?.name}');
+      final items = await _bwCli.listItems(folderId: folder?.id).toList();
+      sendComment('Found ${items.length} potential items');
+      final matchingItems = items.where(_filterKeyGrip(keyGrip)).toList();
+      switch (matchingItems) {
+        case []:
+          sendComment('Found no items with keygrip: $keyGrip');
+          return null;
+        case [final item]:
+          sendComment('Found one matching item');
+          return item.login?.password;
+        default:
+          sendComment('Found more then one matching item!');
+          return null;
+      }
+    } finally {
+      await _bwCli.lock();
+    }
+  }
+
+  Future<bool> _ensureUnlocked() async {
     sendComment('Checking bitwarden CLI status');
     final status = await _bwCli.status();
     switch (status.status) {
       case Status.unauthenticated:
         await _client.setText(
           SetCommand.description,
-          'Bitwarden CLI is not logged in! Please log in and try again.',
+          'Bitwarden CLI is not logged in! Please log in and try again. '
+          'Continuing without bitwarden integration.',
         );
         await _client.showMessage();
-        return null;
+        return false;
       case Status.locked:
-        if (!await _unlock(status)) {
-          return null;
-        }
+        await _unlock(status);
+        return true;
       case Status.unlocked:
-        // TODO: Handle this case.
-        throw UnimplementedError();
+        sendComment('WARNING: bitwarden sessions was already unlocked!');
+        return true;
     }
-    return null;
   }
 
-  Future<bool> _unlock(BwStatus status) async {
+  Future<void> _unlock(BwStatus status) async {
     await _client.setText(SetCommand.title, 'Bitwarden Authentication');
     await _client.setText(
       SetCommand.description,
       'Please enter the master password '
       'for the bitwarden account "${status.userEmail}"',
     );
-    for (var i = 0; i < 3; ++i) {
+    for (var i = 0; i < 2; ++i) {
       try {
         final masterPassword = await _getMasterPassword(status);
         await _bwCli.unlock(masterPassword);
-        return true;
+        return;
       } on Exception catch (e) {
         sendComment('Failed to unlock bitwarden with error: $e');
         await _client.setText(
@@ -199,12 +228,14 @@ final class BwPinentryServer extends PinentryServer {
       }
     }
 
-    sendComment('Failed to unlock bitwarden after 3 attempts');
-    return false;
+    throw AssuanException('Failed to unlock bitwarden after 3 attempts');
   }
 
   Future<String> _getMasterPassword(BwStatus status) async {
     await _client.setText(SetCommand.prompt, 'Master-Password');
     return await _client.getPin();
   }
+
+  bool Function(BwItem) _filterKeyGrip(String keyGrip) =>
+      (i) => i.fields.any((f) => f.name == 'keygrip' && f.value == keyGrip);
 }
