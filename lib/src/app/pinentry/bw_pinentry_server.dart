@@ -24,6 +24,8 @@ import '../bitwarden/models/bw_status.dart';
 import 'bw_pinentry_client.dart';
 
 final class BwPinentryServer extends PinentryServer {
+  static const _folderName = 'GPG-Keys';
+
   final List<String> _arguments;
 
   final _bwCli = BitwardenCli();
@@ -139,9 +141,9 @@ final class BwPinentryServer extends PinentryServer {
 
   Future<ServerReply> _getPin() async {
     if (_keyGrip case final String keyGrip) {
-      final passphrase = await _getBitwardenKey(keyGrip);
-      if (passphrase != null) {
-        return ServerReply.data(passphrase);
+      final pin = await _getPinFromBitwarden(keyGrip);
+      if (pin != null) {
+        return ServerReply.data(pin);
       } else {
         await _resetClientTexts();
       }
@@ -151,39 +153,41 @@ final class BwPinentryServer extends PinentryServer {
     return ServerReply.data(pin);
   }
 
-  Future<void> _resetClientTexts() async {
-    for (final MapEntry(:key, :value) in _textCache.entries) {
-      await _client.setText(key, value);
-    }
-  }
-
-  Future<String?> _getBitwardenKey(String keyGrip) async {
+  Future<String?> _getPinFromBitwarden(String keyGrip) async {
     try {
-      await _bwCli.sync();
       if (!await _ensureUnlocked()) {
         return null;
       }
 
-      sendComment('Searching for folder to narrow down search');
-      final folder = await _bwCli.listFolders(search: 'GPG-Keys').firstOrNull;
-      sendComment('Searching for items within folder: ${folder?.name}');
-      final items = await _bwCli.listItems(folderId: folder?.id).toList();
-      sendComment('Found ${items.length} potential items');
-      final matchingItems = items.where(_filterKeyGrip(keyGrip)).toList();
-      switch (matchingItems) {
-        case []:
-          sendComment('Found no items with keygrip: $keyGrip');
-          return null;
-        case [final item]:
-          sendComment('Found one matching item');
-          return item.login?.password;
-        default:
-          sendComment('Found more then one matching item!');
-          return null;
+      final folder = await _getBitwardenFolder();
+      final item = await _getBitwardenItem(keyGrip, folder);
+      if (item?.login?.password case final String password) {
+        return password;
+      }
+
+      final password = await _client.getPin();
+
+      if (item != null) {
+        await _client.setText(
+          SetCommand.description,
+          'Save passphrase with existing item "${item.name}"?',
+        );
+      } else {
+        await _client.setText(
+          SetCommand.description,
+          'Create new item in folder "${folder?.name}" '
+          'to persist the passphrase?',
+        );
+      }
+
+      final shouldPersist = await _client.confirm();
+      if (!shouldPersist) {
+        return password;
       }
     } finally {
       await _bwCli.lock();
     }
+    return null;
   }
 
   Future<bool> _ensureUnlocked() async {
@@ -236,6 +240,41 @@ final class BwPinentryServer extends PinentryServer {
     return await _client.getPin();
   }
 
+  Future<BwFolder?> _getBitwardenFolder() async {
+    sendComment('Searching for folder to narrow down search');
+    return await _bwCli.listFolders(search: _folderName).firstOrNull;
+  }
+
+  Future<BwItem?> _getBitwardenItem(String keyGrip, BwFolder? folder) async {
+    sendComment('Searching for items within folder: ${folder?.name}');
+    final items = await _bwCli.listItems(folderId: folder?.id).toList();
+    sendComment('Found ${items.length} potential items');
+    final matchingItems = items.where(_filterKeyGrip(keyGrip)).toList();
+    switch (matchingItems) {
+      case []:
+        await _setMatchFailure('No matching items found!', keyGrip);
+        return null;
+      case [final item]:
+        sendComment('Found one matching item');
+        return item;
+      default:
+        await _setMatchFailure('Found more then one matching item!', keyGrip);
+        return null;
+    }
+  }
+
+  Future<void> _resetClientTexts() async {
+    for (final MapEntry(:key, :value) in _textCache.entries) {
+      await _client.setText(key, value);
+    }
+  }
+
   bool Function(BwItem) _filterKeyGrip(String keyGrip) =>
       (i) => i.fields.any((f) => f.name == 'keygrip' && f.value == keyGrip);
+
+  Future<void> _setMatchFailure(String message, String keyGrip) async {
+    sendComment(message);
+    await _resetClientTexts();
+    await _client.setText(SetCommand.error, message);
+  }
 }
