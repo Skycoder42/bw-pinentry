@@ -16,18 +16,22 @@ import '../../assuan/pinentry/protocol/requests/pinentry_set_keyinfo_request.dar
 import '../../assuan/pinentry/protocol/requests/pinentry_set_repeat_request.dart';
 import '../../assuan/pinentry/protocol/requests/pinentry_set_text_request.dart';
 import '../../assuan/pinentry/protocol/requests/pinentry_set_timeout_request.dart';
+import '../../assuan/pinentry/services/pinentry_client.dart';
 import '../../assuan/pinentry/services/pinentry_server.dart';
+import '../bitwarden/bitwarden_cli.dart';
+import '../bitwarden/models/bw_status.dart';
 import 'bw_pinentry_client.dart';
 
 final class BwPinentryServer extends PinentryServer {
-  final List<String> arguments;
+  final List<String> _arguments;
 
+  final _bwCli = BitwardenCli();
   late final BwPinentryClient _client;
 
   final _textCache = <SetCommand, String>{};
   String? _keyGrip;
 
-  BwPinentryServer(super.stdin, super.stdout, this.arguments) : super.io();
+  BwPinentryServer(super.stdin, super.stdout, this._arguments) : super.io();
 
   Stream<String> forwardInquiry(String keyword, List<String> parameters) {
     sendComment('Forwarding INQUIRE $keyword from client');
@@ -44,9 +48,9 @@ final class BwPinentryServer extends PinentryServer {
   Future<void> init() async {
     final pinentry = Platform.environment['PINENTRY'] ?? 'pinentry';
     sendComment(
-      'Server ready. Starting proxied $pinentry with arguments $arguments...',
+      'Server ready. Starting proxied $pinentry with arguments $_arguments...',
     );
-    _client = await BwPinentryClient.start(this, pinentry, arguments);
+    _client = await BwPinentryClient.start(this, pinentry, _arguments);
     sendComment('Proxy is ready.');
     return super.init();
   }
@@ -153,8 +157,54 @@ final class BwPinentryServer extends PinentryServer {
   }
 
   Future<String?> _getBitwardenKey(String keyGrip) async {
-    sendComment('Querying proxy for master password');
-    final ok = await _client.confirm();
-    return ok ? keyGrip : null;
+    sendComment('Checking bitwarden CLI status');
+    final status = await _bwCli.status();
+    switch (status.status) {
+      case Status.unauthenticated:
+        await _client.setText(
+          SetCommand.description,
+          'Bitwarden CLI is not logged in! Please log in and try again.',
+        );
+        await _client.showMessage();
+        return null;
+      case Status.locked:
+        if (!await _unlock(status)) {
+          return null;
+        }
+      case Status.unlocked:
+        // TODO: Handle this case.
+        throw UnimplementedError();
+    }
+    return null;
+  }
+
+  Future<bool> _unlock(BwStatus status) async {
+    await _client.setText(SetCommand.title, 'Bitwarden Authentication');
+    await _client.setText(
+      SetCommand.description,
+      'Please enter the master password '
+      'for the bitwarden account "${status.userEmail}"',
+    );
+    for (var i = 0; i < 3; ++i) {
+      try {
+        final masterPassword = await _getMasterPassword(status);
+        await _bwCli.unlock(masterPassword);
+        return true;
+      } on Exception catch (e) {
+        sendComment('Failed to unlock bitwarden with error: $e');
+        await _client.setText(
+          SetCommand.error,
+          'Invalid Password! Please try again (Attempt ${i + 2}/3)',
+        );
+      }
+    }
+
+    sendComment('Failed to unlock bitwarden after 3 attempts');
+    return false;
+  }
+
+  Future<String> _getMasterPassword(BwStatus status) async {
+    await _client.setText(SetCommand.prompt, 'Master-Password');
+    return await _client.getPin();
   }
 }

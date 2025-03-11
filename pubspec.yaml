@@ -13,6 +13,7 @@ platforms:
 dependencies:
   async: ^2.13.0
   freezed_annotation: ^2.4.4
+  json_annotation: ^4.9.0
   meta: ^1.16.0
   stream_channel: ^2.1.4
 
@@ -22,6 +23,7 @@ dev_dependencies:
   dart_pre_commit: ^5.4.3
   dart_test_tools: ^6.1.0
   freezed: ^2.5.8
+  json_serializable: ^6.9.4
 
 dart_pre_commit:
   flutter-compat: false

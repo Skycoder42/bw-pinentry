@@ -30,6 +30,7 @@ doc/api/
 # Generated files
 lib/gen
 *.freezed.dart
+*.g.dart
 
 # logfiles
 pinentry.log

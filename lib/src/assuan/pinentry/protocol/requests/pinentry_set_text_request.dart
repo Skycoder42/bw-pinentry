@@ -16,7 +16,7 @@ enum SetCommand {
   notOk('SETNOTOK'),
   error('SETERROR'),
   qualityBar('SETQUALITYBAR_TT'),
-  getPin('SETGENPIN_TT');
+  genPin('SETGENPIN_TT');
 
   final String command;
 
