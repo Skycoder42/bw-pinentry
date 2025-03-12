@@ -18,6 +18,8 @@ import '../protocol/requests/pinentry_set_text_request.dart';
 import '../protocol/requests/pinentry_set_timeout_request.dart';
 
 abstract class PinentryClient extends AssuanClient {
+  static const notConfirmedCode = 0x05000063;
+
   PinentryClient(
     StreamChannel<String> channel, {
     super.terminateSignal,
@@ -59,21 +61,38 @@ abstract class PinentryClient extends AssuanClient {
 
   Future<void> enableRepeat() => sendAction(const PinentrySetRepeatRequest());
 
-  Future<String> getPin() => sendRequest(const PinentryGetPinRequest());
+  Future<String?> getPin() async {
+    try {
+      return await sendRequest(const PinentryGetPinRequest());
+    } on AssuanException catch (e) {
+      if (e.code != notConfirmedCode) {
+        rethrow;
+      }
+      return null;
+    }
+  }
 
   Future<bool> confirm() async {
     try {
       await sendAction(const PinentryConfirmRequest());
       return true;
     } on AssuanException catch (e) {
-      if (e.code == PinentryConfirmRequest.notConfirmedCode) {
-        return false;
+      if (e.code != notConfirmedCode) {
+        rethrow;
       }
-      rethrow;
+      return false;
     }
   }
 
-  Future<void> showMessage() => sendAction(const PinentryMessageRequest());
+  Future<void> showMessage() async {
+    try {
+      await sendAction(const PinentryMessageRequest());
+    } on AssuanException catch (e) {
+      if (e.code != notConfirmedCode) {
+        rethrow;
+      }
+    }
+  }
 
   @override
   Future<InquiryReply> onInquire(String keyword, List<String> parameters) =>

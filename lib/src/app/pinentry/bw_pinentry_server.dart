@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:async/async.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:meta/meta.dart';
 
 import '../../assuan/core/protocol/base/assuan_error_code.dart';
@@ -17,8 +18,11 @@ import '../../assuan/pinentry/protocol/requests/pinentry_set_keyinfo_request.dar
 import '../../assuan/pinentry/protocol/requests/pinentry_set_repeat_request.dart';
 import '../../assuan/pinentry/protocol/requests/pinentry_set_text_request.dart';
 import '../../assuan/pinentry/protocol/requests/pinentry_set_timeout_request.dart';
+import '../../assuan/pinentry/services/pinentry_client.dart';
 import '../../assuan/pinentry/services/pinentry_server.dart';
 import '../bitwarden/bitwarden_cli.dart';
+import '../bitwarden/models/bw_item_type.dart';
+import '../bitwarden/models/bw_login.dart';
 import '../bitwarden/models/bw_object.dart';
 import '../bitwarden/models/bw_status.dart';
 import 'bw_pinentry_client.dart';
@@ -132,8 +136,8 @@ final class BwPinentryServer extends PinentryServer {
     final response = await _client.confirm();
     if (!response) {
       throw AssuanException(
-        'prompt was not confirmed',
-        PinentryConfirmRequest.notConfirmedCode,
+        'Prompt was not confirmed',
+        PinentryClient.notConfirmedCode,
       );
     }
     return const ServerReply.ok();
@@ -144,53 +148,43 @@ final class BwPinentryServer extends PinentryServer {
       final pin = await _getPinFromBitwarden(keyGrip);
       if (pin != null) {
         return ServerReply.data(pin);
-      } else {
-        await _resetClientTexts();
       }
     }
 
     final pin = await _client.getPin();
-    return ServerReply.data(pin);
+    if (pin != null) {
+      return ServerReply.data(pin);
+    } else {
+      throw AssuanException(
+        'Prompt was not confirmed',
+        PinentryClient.notConfirmedCode,
+      );
+    }
   }
 
   Future<String?> _getPinFromBitwarden(String keyGrip) async {
     try {
-      if (!await _ensureUnlocked()) {
+      final status = await _ensureUnlocked();
+      if (status == null) {
+        await _resetClientTexts();
         return null;
       }
 
-      final folder = await _getBitwardenFolder();
-      final item = await _getBitwardenItem(keyGrip, folder);
-      if (item?.login?.password case final String password) {
-        return password;
+      var synced = false;
+      if (status.lastSync case final DateTime dt
+          when DateTime.now().difference(dt) > const Duration(days: 1)) {
+        sendComment('Last sync was on $dt. Syncing bitwarden vault');
+        await _bwCli.sync();
+        synced = true;
       }
 
-      final password = await _client.getPin();
-
-      if (item != null) {
-        await _client.setText(
-          SetCommand.description,
-          'Save passphrase with existing item "${item.name}"?',
-        );
-      } else {
-        await _client.setText(
-          SetCommand.description,
-          'Create new item in folder "${folder?.name}" '
-          'to persist the passphrase?',
-        );
-      }
-
-      final shouldPersist = await _client.confirm();
-      if (!shouldPersist) {
-        return password;
-      }
+      return await _findPassword(keyGrip, synced: synced);
     } finally {
       await _bwCli.lock();
     }
-    return null;
   }
 
-  Future<bool> _ensureUnlocked() async {
+  Future<BwStatus?> _ensureUnlocked() async {
     sendComment('Checking bitwarden CLI status');
     final status = await _bwCli.status();
     switch (status.status) {
@@ -201,65 +195,114 @@ final class BwPinentryServer extends PinentryServer {
           'Continuing without bitwarden integration.',
         );
         await _client.showMessage();
-        return false;
+        return null;
       case Status.locked:
-        await _unlock(status);
-        return true;
+        if (await _unlock(status)) {
+          return status.copyWith(status: Status.unlocked);
+        } else {
+          return null;
+        }
       case Status.unlocked:
         sendComment('WARNING: bitwarden sessions was already unlocked!');
-        return true;
+        return status;
     }
   }
 
-  Future<void> _unlock(BwStatus status) async {
+  Future<bool> _unlock(BwStatus status) async {
+    final descBuffer = StringBuffer();
+    if (_textCache case {SetCommand.description: final description}) {
+      descBuffer
+        ..writeln(description)
+        ..writeln();
+    }
+    descBuffer
+      ..write('Please enter the master password for the bitwarden account "')
+      ..write(status.userEmail)
+      ..write('"');
+
     await _client.setText(SetCommand.title, 'Bitwarden Authentication');
-    await _client.setText(
-      SetCommand.description,
-      'Please enter the master password '
-      'for the bitwarden account "${status.userEmail}"',
-    );
-    for (var i = 0; i < 2; ++i) {
-      try {
-        final masterPassword = await _getMasterPassword(status);
-        await _bwCli.unlock(masterPassword);
-        return;
-      } on Exception catch (e) {
-        sendComment('Failed to unlock bitwarden with error: $e');
+    await _client.setText(SetCommand.description, descBuffer.toString());
+    await _client.setText(SetCommand.prompt, 'Master-Password');
+    for (var attempt = 1; attempt <= 3; ++attempt) {
+      if (attempt > 1) {
         await _client.setText(
           SetCommand.error,
-          'Invalid Password! Please try again (Attempt ${i + 2}/3)',
+          'Invalid Password! Please try again (Attempt $attempt/3)',
         );
+      }
+
+      try {
+        final masterPassword = await _client.getPin();
+        if (masterPassword == null) {
+          return false;
+        }
+
+        await _bwCli.unlock(masterPassword);
+        return true;
+      } on Exception catch (e) {
+        sendComment('Failed to unlock bitwarden with error: $e');
       }
     }
 
     throw AssuanException('Failed to unlock bitwarden after 3 attempts');
   }
 
-  Future<String> _getMasterPassword(BwStatus status) async {
-    await _client.setText(SetCommand.prompt, 'Master-Password');
-    return await _client.getPin();
-  }
-
-  Future<BwFolder?> _getBitwardenFolder() async {
+  Future<String?> _findPassword(String keyGrip, {bool synced = false}) async {
     sendComment('Searching for folder to narrow down search');
-    return await _bwCli.listFolders(search: _folderName).firstOrNull;
-  }
-
-  Future<BwItem?> _getBitwardenItem(String keyGrip, BwFolder? folder) async {
+    final folder = await _bwCli.listFolders(search: _folderName).firstOrNull;
     sendComment('Searching for items within folder: ${folder?.name}');
     final items = await _bwCli.listItems(folderId: folder?.id).toList();
     sendComment('Found ${items.length} potential items');
+
     final matchingItems = items.where(_filterKeyGrip(keyGrip)).toList();
     switch (matchingItems) {
       case []:
-        await _setMatchFailure('No matching items found!', keyGrip);
-        return null;
-      case [final item]:
-        sendComment('Found one matching item');
-        return item;
+        return await _retrySyncedOrFail(
+          keyGrip: keyGrip,
+          message: 'No matching items found!',
+          synced: synced,
+        );
+      case [BwItem(type: != BwItemType.login)]:
+        return await _retrySyncedOrFail(
+          keyGrip: keyGrip,
+          message: 'Found matching item, but it is not a login!',
+          synced: synced,
+        );
+      case [BwItem(login: BwLogin(password: final String password))]:
+        sendComment('Found matching login item with password set.');
+        return password;
+      case [_]:
+        return await _retrySyncedOrFail(
+          keyGrip: keyGrip,
+          message: 'Found matching login item, but it has no password set!',
+          synced: synced,
+        );
       default:
-        await _setMatchFailure('Found more then one matching item!', keyGrip);
-        return null;
+        return await _retrySyncedOrFail(
+          keyGrip: keyGrip,
+          message: 'Found more then one matching item!',
+          synced: synced,
+        );
+    }
+  }
+
+  bool Function(BwItem) _filterKeyGrip(String keyGrip) =>
+      (i) => i.fields.any((f) => f.name == 'keygrip' && f.value == keyGrip);
+
+  Future<String?> _retrySyncedOrFail({
+    required String keyGrip,
+    required String message,
+    required bool synced,
+  }) async {
+    if (synced) {
+      sendComment(message);
+      await _resetClientTexts();
+      await _client.setText(SetCommand.error, message);
+      return null;
+    } else {
+      sendComment('$message Syncing vault, then trying again.');
+      await _bwCli.sync();
+      return _findPassword(keyGrip, synced: true);
     }
   }
 
@@ -267,14 +310,5 @@ final class BwPinentryServer extends PinentryServer {
     for (final MapEntry(:key, :value) in _textCache.entries) {
       await _client.setText(key, value);
     }
-  }
-
-  bool Function(BwItem) _filterKeyGrip(String keyGrip) =>
-      (i) => i.fields.any((f) => f.name == 'keygrip' && f.value == keyGrip);
-
-  Future<void> _setMatchFailure(String message, String keyGrip) async {
-    sendComment(message);
-    await _resetClientTexts();
-    await _client.setText(SetCommand.error, message);
   }
 }

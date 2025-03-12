@@ -13,8 +13,6 @@ part 'pinentry_confirm_request.freezed.dart';
 sealed class PinentryConfirmRequest
     with _$PinentryConfirmRequest
     implements AssuanRequest {
-  static const notConfirmedCode = 0x05000063;
-
   static const cmd = 'CONFIRM';
   static const handler = PinentryConfirmRequestHandler();
 
