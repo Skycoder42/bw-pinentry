@@ -16,10 +16,9 @@ import '../protocol/requests/pinentry_set_keyinfo_request.dart';
 import '../protocol/requests/pinentry_set_repeat_request.dart';
 import '../protocol/requests/pinentry_set_text_request.dart';
 import '../protocol/requests/pinentry_set_timeout_request.dart';
+import 'pinentry_server.dart';
 
 abstract class PinentryClient extends AssuanClient {
-  static const notConfirmedCode = 0x05000063;
-
   PinentryClient(
     StreamChannel<String> channel, {
     super.terminateSignal,
@@ -65,7 +64,7 @@ abstract class PinentryClient extends AssuanClient {
     try {
       return await sendRequest(const PinentryGetPinRequest());
     } on AssuanException catch (e) {
-      if (e.code != notConfirmedCode) {
+      if (e.code != PinentryServer.notConfirmedCode) {
         rethrow;
       }
       return null;
@@ -77,7 +76,7 @@ abstract class PinentryClient extends AssuanClient {
       await sendAction(const PinentryConfirmRequest());
       return true;
     } on AssuanException catch (e) {
-      if (e.code != notConfirmedCode) {
+      if (e.code != PinentryServer.notConfirmedCode) {
         rethrow;
       }
       return false;
@@ -88,7 +87,7 @@ abstract class PinentryClient extends AssuanClient {
     try {
       await sendAction(const PinentryMessageRequest());
     } on AssuanException catch (e) {
-      if (e.code != notConfirmedCode) {
+      if (e.code != PinentryServer.notConfirmedCode) {
         rethrow;
       }
     }

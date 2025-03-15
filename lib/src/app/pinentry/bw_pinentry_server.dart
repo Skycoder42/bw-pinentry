@@ -18,7 +18,6 @@ import '../../assuan/pinentry/protocol/requests/pinentry_set_keyinfo_request.dar
 import '../../assuan/pinentry/protocol/requests/pinentry_set_repeat_request.dart';
 import '../../assuan/pinentry/protocol/requests/pinentry_set_text_request.dart';
 import '../../assuan/pinentry/protocol/requests/pinentry_set_timeout_request.dart';
-import '../../assuan/pinentry/services/pinentry_client.dart';
 import '../../assuan/pinentry/services/pinentry_server.dart';
 import '../bitwarden/bitwarden_cli.dart';
 import '../bitwarden/models/bw_item_type.dart';
@@ -37,16 +36,14 @@ final class BwPinentryServer extends PinentryServer {
 
   final _textCache = <SetCommand, String>{};
   String? _keyGrip;
+  bool _skipBitwarden = false;
 
   BwPinentryServer(super.stdin, super.stdout, this._arguments) : super.io();
 
-  Stream<String> forwardInquiry(String keyword, List<String> parameters) {
-    sendComment('Forwarding INQUIRE $keyword from client');
-    return startInquire(keyword, parameters);
-  }
+  Stream<String> forwardInquiry(String keyword, List<String> parameters) =>
+      startInquire(keyword, parameters);
 
   void forwardStatus(String keyword, String status) {
-    sendComment('Forwarding STATUS $keyword from client');
     sendStatus(keyword, status);
   }
 
@@ -70,9 +67,11 @@ final class BwPinentryServer extends PinentryServer {
   @override
   @protected
   Future<void> reset({bool closing = false}) async {
+    await _bwCli.lock();
     if (!closing) {
       _textCache.clear();
       _keyGrip = null;
+      _skipBitwarden = false;
       await _client.reset();
     }
     await super.reset(closing: closing);
@@ -81,6 +80,7 @@ final class BwPinentryServer extends PinentryServer {
   @override
   @protected
   Future<void> finalize() async {
+    await _bwCli.lock();
     await _client.close();
     await super.finalize();
   }
@@ -137,18 +137,19 @@ final class BwPinentryServer extends PinentryServer {
     if (!response) {
       throw AssuanException(
         'Prompt was not confirmed',
-        PinentryClient.notConfirmedCode,
+        PinentryServer.notConfirmedCode,
       );
     }
     return const ServerReply.ok();
   }
 
   Future<ServerReply> _getPin() async {
-    if (_keyGrip case final String keyGrip) {
+    if (_keyGrip case final String keyGrip when !_skipBitwarden) {
       final pin = await _getPinFromBitwarden(keyGrip);
       if (pin != null) {
         return ServerReply.data(pin);
       }
+      _skipBitwarden = true;
     }
 
     final pin = await _client.getPin();
@@ -157,7 +158,7 @@ final class BwPinentryServer extends PinentryServer {
     } else {
       throw AssuanException(
         'Prompt was not confirmed',
-        PinentryClient.notConfirmedCode,
+        PinentryServer.notConfirmedCode,
       );
     }
   }
@@ -190,11 +191,10 @@ final class BwPinentryServer extends PinentryServer {
     switch (status.status) {
       case Status.unauthenticated:
         await _client.setText(
-          SetCommand.description,
-          'Bitwarden CLI is not logged in! Please log in and try again. '
+          SetCommand.error,
+          'Bitwarden CLI is not logged in! '
           'Continuing without bitwarden integration.',
         );
-        await _client.showMessage();
         return null;
       case Status.locked:
         if (await _unlock(status)) {
@@ -211,14 +211,13 @@ final class BwPinentryServer extends PinentryServer {
   Future<bool> _unlock(BwStatus status) async {
     final descBuffer = StringBuffer();
     if (_textCache case {SetCommand.description: final description}) {
-      descBuffer
-        ..writeln(description)
-        ..writeln();
+      descBuffer.writeln(description);
     }
     descBuffer
       ..write('Please enter the master password for the bitwarden account "')
       ..write(status.userEmail)
-      ..write('"');
+      ..write('"')
+      ..writeln();
 
     await _client.setText(SetCommand.title, 'Bitwarden Authentication');
     await _client.setText(SetCommand.description, descBuffer.toString());
