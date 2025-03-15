@@ -10,6 +10,9 @@ environment:
 platforms:
   linux:
 
+executables:
+  bw-pinentry: bw_pinentry
+
 dependencies:
   async: ^2.13.0
   freezed_annotation: ^3.0.0
@@ -27,10 +30,16 @@ dev_dependencies:
 
 aur:
   maintainer: Skycoder42 <Skycoder42@users.noreply.github.com>
+  pkgname: bw-pinentry
   license: BSD
   depends:
     - pinentry
     - bitwarden-cli
+
+cider:
+  link_template:
+    tag: https://github.com/Skycoder42/bw-pinentry/releases/tag/v%tag%
+    diff: https://github.com/Skycoder42/bw-pinentry/compare/v%from%...v%to%
 
 dart_pre_commit:
   flutter-compat: false
