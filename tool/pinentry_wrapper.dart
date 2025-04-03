@@ -12,10 +12,7 @@ void main(List<String> args) async {
   final logFileSink = logFile.openWrite();
   try {
     logFileSink.writeln('STARTED: $args');
-    final pinentry = await Process.start(
-      '/home/sky/repo/dart-packages/bw-pinentry/bin/bw_pinentry.exe',
-      args,
-    );
+    final pinentry = await Process.start('/usr/bin/bw-pinentry', args);
 
     await Future.wait([
       stdin

@@ -296,7 +296,7 @@ final class BwPinentryServer extends PinentryServer {
     if (synced) {
       sendComment(message);
       await _resetClientTexts();
-      await _client.setText(SetCommand.error, message);
+      await _client.setText(SetCommand.error, '$message\nKeygrip: $keyGrip');
       return null;
     } else {
       sendComment('$message Syncing vault, then trying again.');

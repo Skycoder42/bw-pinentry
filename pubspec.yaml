@@ -1,6 +1,6 @@
 name: bw_pinentry
 description: A pinentry wrapper around the bitwarden CLI to use your vault for GPG-Key storage.
-version: 1.0.0
+version: 1.0.1
 repository: https://github.com/Skycoder42/bw-pinentry
 publish_to: none
 
@@ -25,7 +25,7 @@ dev_dependencies:
   custom_lint: ^0.7.5
   dart_pre_commit: ^5.4.4
   dart_test_tools: ^6.1.1
-  freezed: ^3.0.3
+  freezed: ^3.0.4
   json_serializable: ^6.9.4
 
 aur:
