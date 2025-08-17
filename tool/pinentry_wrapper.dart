@@ -8,7 +8,6 @@ import 'package:async/async.dart';
 
 void main(List<String> args) async {
   final logFile = File('/tmp/pinentry.log');
-  // ignore: close_sinks
   final logFileSink = logFile.openWrite();
   try {
     logFileSink.writeln('STARTED: $args');

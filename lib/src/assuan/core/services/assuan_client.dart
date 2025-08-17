@@ -290,7 +290,6 @@ abstract class AssuanClient {
         case InquiryCancelReply():
           _send(const AssuanCancelRequest());
       }
-      // ignore: avoid_catches_without_on_clauses
     } catch (_) {
       _send(const AssuanCancelRequest());
       rethrow;
@@ -390,9 +389,8 @@ abstract class AssuanClient {
     ]);
   }
 
-  Never _throwNotPending() =>
-      throw AssuanException.code(
-        AssuanErrorCode.invResponse,
-        'Not awaiting any data from server',
-      );
+  Never _throwNotPending() => throw AssuanException.code(
+    AssuanErrorCode.invResponse,
+    'Not awaiting any data from server',
+  );
 }

@@ -22,11 +22,10 @@ class AssuanDataReader {
       const (int) => int.parse(raw) as T,
       const (double) => double.parse(raw) as T,
       const (bool) => bool.parse(raw) as T,
-      _ =>
-        throw AssuanException.code(
-          AssuanErrorCode.invValue,
-          'Unsupported data type <$T>',
-        ),
+      _ => throw AssuanException.code(
+        AssuanErrorCode.invValue,
+        'Unsupported data type <$T>',
+      ),
     };
   }
 

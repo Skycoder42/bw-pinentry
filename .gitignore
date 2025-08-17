@@ -33,4 +33,4 @@ lib/gen
 *.g.dart
 
 # logfiles
-pinentry.log
+*.log

@@ -45,51 +45,43 @@ class BitwardenCli {
     String? search,
     String? url,
     String? folderId,
-  }) =>
-      _execJsonStream(
-        ['list', type],
-        BwObject.fromJson,
-        arguments: {
-          if (search != null) 'search': search,
-          if (url != null) 'url': url,
-          if (folderId != null) 'folderid': folderId,
-        },
-      ).cast<T>();
+  }) => _execJsonStream(
+    ['list', type],
+    BwObject.fromJson,
+    arguments: {'search': ?search, 'url': ?url, 'folderid': ?folderId},
+  ).cast<T>();
 
   Future<void> _exec(
     List<String> command, {
     Map<String, dynamic> arguments = const {},
     Map<String, String>? environment,
-  }) =>
-      _streamBw(
-        command,
-        arguments: arguments,
-        environment: environment,
-      ).drain<void>();
+  }) => _streamBw(
+    command,
+    arguments: arguments,
+    environment: environment,
+  ).drain<void>();
 
   Future<String> _execString(
     List<String> command, {
     Map<String, dynamic> arguments = const {},
     Map<String, String>? environment,
-  }) =>
-      _streamBw(
-        command,
-        arguments: arguments,
-        environment: environment,
-      ).transform(utf8.decoder).join();
+  }) => _streamBw(
+    command,
+    arguments: arguments,
+    environment: environment,
+  ).transform(utf8.decoder).join();
 
   Future<T> _execJson<T>(
     List<String> command,
     T Function(Map<String, dynamic>) fromJson, {
     Map<String, dynamic> arguments = const {},
     Map<String, String>? environment,
-  }) =>
-      _streamBw(command, arguments: arguments, environment: environment)
-          .transform(utf8.decoder)
-          .transform(json.decoder)
-          .cast<Map<String, dynamic>>()
-          .map(fromJson)
-          .single;
+  }) => _streamBw(command, arguments: arguments, environment: environment)
+      .transform(utf8.decoder)
+      .transform(json.decoder)
+      .cast<Map<String, dynamic>>()
+      .map(fromJson)
+      .single;
 
   Stream<T> _execJsonStream<T>(
     List<String> command,

@@ -67,7 +67,6 @@ abstract class AssuanServer {
           cancelOnError: false,
         );
 
-    // ignore: discarded_futures
     _requestSub.pause(init().catchError(_handleError));
   }
 

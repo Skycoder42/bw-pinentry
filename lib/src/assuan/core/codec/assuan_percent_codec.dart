@@ -39,12 +39,11 @@ class _AssuanPercentDecoder extends Converter<String, String> {
       input.replaceAllMapped(_percentEncodedPattern, _decode);
 
   String _decode(Match match) {
-    final bytes =
-        match[0]!
-            .split('%')
-            .skip(1)
-            .map((hex) => int.parse(hex, radix: 16))
-            .toList();
+    final bytes = match[0]!
+        .split('%')
+        .skip(1)
+        .map((hex) => int.parse(hex, radix: 16))
+        .toList();
     return utf8.decode(bytes);
   }
 }

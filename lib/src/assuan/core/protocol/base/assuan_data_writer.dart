@@ -14,11 +14,10 @@ class AssuanDataWriter {
           autoSpace: autoSpace,
         ),
         num() || bool() => writeRaw(object.toString(), autoSpace: autoSpace),
-        _ =>
-          throw AssuanException.code(
-            AssuanErrorCode.invValue,
-            'Unsupported data type <${object.runtimeType}>',
-          ),
+        _ => throw AssuanException.code(
+          AssuanErrorCode.invValue,
+          'Unsupported data type <${object.runtimeType}>',
+        ),
       };
 
   void writeRaw(String data, {bool autoSpace = true}) {
