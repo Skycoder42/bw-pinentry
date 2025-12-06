@@ -17,6 +17,7 @@ class AssuanDataReader {
 
   T read<T extends Object>({bool fixedSpace = false}) {
     final raw = readRaw(fixedSpace: fixedSpace);
+    // ignore: switch_on_type on purpose
     return switch (T) {
       const (String) => assuanPercentCodec.decode(raw) as T,
       const (int) => int.parse(raw) as T,

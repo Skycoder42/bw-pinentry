@@ -142,7 +142,7 @@ abstract class AssuanServer {
       );
     }
 
-    // ignore: close_sinks
+    // ignore: close_sinks false positive
     final ctr = _pendingInquire = StreamController();
     _send(AssuanInquireResponse(keyword, parameters));
     return ctr.stream.transform(const AssuanDataDecoder());
@@ -236,7 +236,7 @@ abstract class AssuanServer {
               await _sendStream(data, message);
           }
       }
-      // ignore: avoid_catches_without_on_clauses
+      // ignore: avoid_catches_without_on_clauses for explicit error handling
     } catch (e, s) {
       _handleError(e, s);
     } finally {
@@ -289,7 +289,7 @@ abstract class AssuanServer {
           'Already processing another command',
         );
       }
-      // ignore: avoid_catches_without_on_clauses
+      // ignore: avoid_catches_without_on_clauses for explicit error handling
     } catch (e, s) {
       _handleError(e, s);
     }

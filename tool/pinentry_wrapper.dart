@@ -30,7 +30,7 @@ void main(List<String> args) async {
 
     exitCode = await pinentry.exitCode;
     logFileSink.writeln('EXIT: $exitCode');
-    // ignore: avoid_catches_without_on_clauses
+    // ignore: avoid_catches_without_on_clauses for explicit error handling
   } catch (e, s) {
     logFileSink
       ..writeln('###############################################')
