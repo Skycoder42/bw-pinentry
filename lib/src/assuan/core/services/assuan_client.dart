@@ -227,7 +227,7 @@ abstract class AssuanClient {
             'Unknown command <${response.command}>',
           );
       }
-      // ignore: avoid_catches_without_on_clauses
+      // ignore: avoid_catches_without_on_clauses for explicit error handling
     } catch (e, s) {
       await _handleError(e, s);
     }
@@ -336,7 +336,7 @@ abstract class AssuanClient {
         );
       }
 
-      // ignore: avoid_catches_without_on_clauses
+      // ignore: avoid_catches_without_on_clauses for explicit error handling
     } catch (e, s) {
       await _handleError(e, s);
     }
@@ -363,7 +363,7 @@ abstract class AssuanClient {
         );
       }
 
-      // ignore: avoid_catches_without_on_clauses
+      // ignore: avoid_catches_without_on_clauses for explicit error handling
     } catch (e, s) {
       await _handleError(e, s);
     }
