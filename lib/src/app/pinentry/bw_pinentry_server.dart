@@ -36,7 +36,7 @@ final class BwPinentryServer extends PinentryServer {
 
   final _textCache = <SetCommand, String>{};
   String? _keyGrip;
-  bool _skipBitwarden = false;
+  var _skipBitwarden = false;
 
   BwPinentryServer(super.stdin, super.stdout, this._arguments) : super.io();
 

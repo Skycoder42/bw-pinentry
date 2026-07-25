@@ -30,17 +30,13 @@ sealed class PinentrySetTextRequest
   static Iterable<String> get cmds => SetCommand.values.map((v) => v.command);
   static const handler = PinentrySetTextRequestHandler();
 
-  factory PinentrySetTextRequest(SetCommand setCommand, String text) =>
-      PinentrySetTextRequest.internal(setCommand.command, text);
-
-  @protected
-  const factory PinentrySetTextRequest.internal(String command, String text) =
+  const factory PinentrySetTextRequest(SetCommand setCommand, String text) =
       _PinentrySetTextRequest;
 
   const PinentrySetTextRequest._();
 
-  SetCommand get setCommand =>
-      SetCommand.values.singleWhere((c) => c.command == command);
+  @override
+  String get command => setCommand.command;
 }
 
 class PinentrySetTextRequestHandler
@@ -56,5 +52,8 @@ class PinentrySetTextRequestHandler
 
   @override
   PinentrySetTextRequest decodeData(AssuanDataReader reader) =>
-      PinentrySetTextRequest.internal(reader.command, reader.readAll());
+      PinentrySetTextRequest(
+        .values.singleWhere((c) => c.command == reader.command),
+        reader.readAll(),
+      );
 }
