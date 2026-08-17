@@ -221,10 +221,10 @@ packages:
     dependency: "direct dev"
     description:
       name: dart_test_tools
-      sha256: "686043b9d699ae92a207bb52c1dd7daf2b1b8eec28c5da14618347f78fa9c88a"
+      sha256: f8f2d3ffaf495a483b814cf7afe59dac4f4bcf0ba6faff62480dc5afa8c64099
       url: "https://pub.dev"
     source: hosted
-    version: "7.2.3"
+    version: "7.3.0"
   dotenv:
     dependency: transitive
     description:
@@ -541,10 +541,10 @@ packages:
     dependency: transitive
     description:
       name: source_helper
-      sha256: "4227d54ceefd0bb8ca4c8fcb96e1719dc53f1ee1b6e2ca9d7a6069da160e4eae"
+      sha256: "5e6f216fdf6376c9f3852381ae037499797a3385377d388b011dac98d303c67c"
       url: "https://pub.dev"
     source: hosted
-    version: "1.3.12"
+    version: "1.3.13"
   source_map_stack_trace:
     dependency: transitive
     description:
