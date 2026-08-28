@@ -11,7 +11,7 @@ import '../protocol/base/assuan_message_handler.dart';
 import 'converter_sink.dart';
 
 class AssuanRequestEncoder extends AssuanMessageEncoder<AssuanRequest> {
-  AssuanRequestEncoder(super.protocol);
+  new(super.protocol);
 
   @override
   @visibleForOverriding
@@ -20,7 +20,7 @@ class AssuanRequestEncoder extends AssuanMessageEncoder<AssuanRequest> {
 }
 
 class AssuanResponseEncoder extends AssuanMessageEncoder<AssuanResponse> {
-  AssuanResponseEncoder(super.protocol);
+  new(super.protocol);
 
   @override
   @visibleForOverriding
@@ -33,7 +33,7 @@ sealed class AssuanMessageEncoder<T extends AssuanMessage>
   @protected
   final AssuanProtocol protocol;
 
-  AssuanMessageEncoder(this.protocol);
+  new(this.protocol);
 
   @visibleForOverriding
   AssuanMessageHandler<T>? getHandler(String command);

@@ -20,7 +20,7 @@ enum SetCommand {
 
   final String command;
 
-  const SetCommand(this.command);
+  new(this.command);
 }
 
 @freezed
@@ -30,10 +30,9 @@ sealed class PinentrySetTextRequest
   static Iterable<String> get cmds => SetCommand.values.map((v) => v.command);
   static const handler = PinentrySetTextRequestHandler();
 
-  const factory PinentrySetTextRequest(SetCommand setCommand, String text) =
-      _PinentrySetTextRequest;
+  const factory(SetCommand setCommand, String text) = _PinentrySetTextRequest;
 
-  const PinentrySetTextRequest._();
+  const new _();
 
   @override
   String get command => setCommand.command;
@@ -41,7 +40,7 @@ sealed class PinentrySetTextRequest
 
 class PinentrySetTextRequestHandler
     implements AssuanMessageHandler<PinentrySetTextRequest> {
-  const PinentrySetTextRequestHandler();
+  const new();
 
   @override
   bool hasData(_) => true;

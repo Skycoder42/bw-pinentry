@@ -12,9 +12,9 @@ sealed class PinentryMessageRequest
   static const cmd = 'MESSAGE';
   static const handler = PinentryMessageRequestHandler();
 
-  const factory PinentryMessageRequest() = _PinentryMessageRequest;
+  const factory() = _PinentryMessageRequest;
 
-  const PinentryMessageRequest._();
+  const new _();
 
   @override
   String get command => cmd;
@@ -22,5 +22,5 @@ sealed class PinentryMessageRequest
 
 class PinentryMessageRequestHandler
     extends EmptyAssuanMessageHandler<PinentryMessageRequest> {
-  const PinentryMessageRequestHandler() : super(PinentryMessageRequest.new);
+  const new() : super(PinentryMessageRequest.new);
 }

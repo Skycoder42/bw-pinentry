@@ -43,7 +43,7 @@ abstract class AssuanServer {
   // ignore: close_sinks false positive
   StreamController<AssuanDataMessage>? _pendingInquire;
 
-  AssuanServer(this.protocol, this.channel) {
+  new(this.protocol, this.channel) {
     _responseSink = channel.sink
         .transform(
           StreamSinkTransformer.fromStreamTransformer(
@@ -70,7 +70,7 @@ abstract class AssuanServer {
     _requestSub.pause(init().catchError(_handleError));
   }
 
-  AssuanServer.raw(
+  new raw(
     AssuanProtocol protocol,
     StreamChannel<List<int>> channel, {
     Encoding encoding = utf8,
@@ -79,7 +79,7 @@ abstract class AssuanServer {
          channel.transform(StreamChannelTransformer.fromCodec(encoding)),
        );
 
-  AssuanServer.io(
+  new io(
     AssuanProtocol protocol,
     Stdin stdin,
     Stdout stdout, {

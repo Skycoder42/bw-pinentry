@@ -10,9 +10,9 @@ sealed class AssuanEndRequest with _$AssuanEndRequest implements AssuanRequest {
   static const cmd = 'END';
   static const handler = AssuanEndRequestHandler();
 
-  const factory AssuanEndRequest() = _AssuanEndRequest;
+  const factory() = _AssuanEndRequest;
 
-  const AssuanEndRequest._();
+  const new _();
 
   @override
   String get command => cmd;
@@ -20,5 +20,5 @@ sealed class AssuanEndRequest with _$AssuanEndRequest implements AssuanRequest {
 
 class AssuanEndRequestHandler
     extends EmptyAssuanMessageHandler<AssuanEndRequest> {
-  const AssuanEndRequestHandler() : super(AssuanEndRequest.new);
+  const new() : super(AssuanEndRequest.new);
 }

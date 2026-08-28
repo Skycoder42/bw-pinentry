@@ -14,12 +14,10 @@ sealed class AssuanInquireResponse
   static const cmd = 'INQUIRE';
   static const handler = AssuanInquireResponseHandler();
 
-  const factory AssuanInquireResponse(
-    String keyword, [
-    @Default([]) List<String> parameters,
-  ]) = _AssuanInquireResponse;
+  const factory(String keyword, [@Default([]) List<String> parameters]) =
+      _AssuanInquireResponse;
 
-  const AssuanInquireResponse._();
+  const new _();
 
   @override
   String get command => cmd;
@@ -27,7 +25,7 @@ sealed class AssuanInquireResponse
 
 class AssuanInquireResponseHandler
     implements AssuanMessageHandler<AssuanInquireResponse> {
-  const AssuanInquireResponseHandler();
+  const new();
 
   @override
   bool hasData(_) => true;

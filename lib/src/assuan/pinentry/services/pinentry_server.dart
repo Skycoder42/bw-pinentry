@@ -8,12 +8,11 @@ import '../protocol/pinentry_protocol.dart';
 abstract class PinentryServer extends AssuanServer {
   static const notConfirmedCode = 0x05000063;
 
-  PinentryServer(StreamChannel<String> channel)
-    : super(PinentryProtocol(), channel);
+  new(StreamChannel<String> channel) : super(PinentryProtocol(), channel);
 
-  PinentryServer.raw(StreamChannel<List<int>> channel, {super.encoding})
+  new raw(StreamChannel<List<int>> channel, {super.encoding})
     : super.raw(PinentryProtocol(), channel);
 
-  PinentryServer.io(Stdin stdin, Stdout stdout, {super.encoding})
+  new io(Stdin stdin, Stdout stdout, {super.encoding})
     : super.io(PinentryProtocol(), stdin, stdout);
 }

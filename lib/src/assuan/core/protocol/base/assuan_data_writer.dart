@@ -5,7 +5,7 @@ import 'assuan_exception.dart';
 class AssuanDataWriter {
   final StringBuffer _buffer;
 
-  AssuanDataWriter(this._buffer);
+  new(this._buffer);
 
   void write<T extends Object>(T object, {bool autoSpace = true}) =>
       switch (object) {

@@ -11,7 +11,7 @@ sealed class AssuanCodec<T extends AssuanMessage> extends Codec<T, String> {
   @protected
   final AssuanProtocol protocol;
 
-  AssuanCodec(this.protocol);
+  new(this.protocol);
 
   @override
   AssuanMessageEncoder<T> get encoder;
@@ -21,7 +21,7 @@ sealed class AssuanCodec<T extends AssuanMessage> extends Codec<T, String> {
 }
 
 class AssuanRequestCodec extends AssuanCodec<AssuanRequest> {
-  AssuanRequestCodec(super.protocol);
+  new(super.protocol);
 
   @override
   AssuanRequestEncoder get encoder => AssuanRequestEncoder(protocol);
@@ -31,7 +31,7 @@ class AssuanRequestCodec extends AssuanCodec<AssuanRequest> {
 }
 
 class AssuanResponseCodec extends AssuanCodec<AssuanResponse> {
-  AssuanResponseCodec(super.protocol);
+  new(super.protocol);
 
   @override
   AssuanResponseEncoder get encoder => AssuanResponseEncoder(protocol);

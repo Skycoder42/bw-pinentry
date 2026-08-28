@@ -12,10 +12,9 @@ sealed class PinentryEnableQualityBarRequest
   static const cmd = 'SETQUALITYBAR';
   static const handler = PinentryEnableQualityBarRequestHandler();
 
-  const factory PinentryEnableQualityBarRequest() =
-      _PinentryEnableQualityBarRequest;
+  const factory() = _PinentryEnableQualityBarRequest;
 
-  const PinentryEnableQualityBarRequest._();
+  const new _();
 
   @override
   String get command => cmd;
@@ -23,6 +22,5 @@ sealed class PinentryEnableQualityBarRequest
 
 class PinentryEnableQualityBarRequestHandler
     extends EmptyAssuanMessageHandler<PinentryEnableQualityBarRequest> {
-  const PinentryEnableQualityBarRequestHandler()
-    : super(PinentryEnableQualityBarRequest.new);
+  const new() : super(PinentryEnableQualityBarRequest.new);
 }

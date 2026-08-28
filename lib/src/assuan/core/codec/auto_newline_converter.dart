@@ -4,7 +4,7 @@ import 'dart:io';
 class AppendLineTerminatorConverter extends Converter<String, String> {
   final String lineTerminator;
 
-  AppendLineTerminatorConverter({String? lineTerminator})
+  new({String? lineTerminator})
     : lineTerminator = lineTerminator ?? Platform.lineTerminator;
 
   @override
@@ -19,7 +19,7 @@ class _AppendLineTerminatorSink implements Sink<String> {
   final Sink<String> _sink;
   final String _lineTerminator;
 
-  _AppendLineTerminatorSink(this._sink, this._lineTerminator);
+  new(this._sink, this._lineTerminator);
 
   @override
   void add(String data) {

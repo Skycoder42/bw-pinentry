@@ -38,7 +38,7 @@ final class BwPinentryServer extends PinentryServer {
   String? _keyGrip;
   var _skipBitwarden = false;
 
-  BwPinentryServer(super.stdin, super.stdout, this._arguments) : super.io();
+  new(super.stdin, super.stdout, this._arguments) : super.io();
 
   Stream<String> forwardInquiry(String keyword, List<String> parameters) =>
       startInquire(keyword, parameters);

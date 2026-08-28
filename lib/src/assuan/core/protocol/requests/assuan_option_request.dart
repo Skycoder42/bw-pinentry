@@ -14,10 +14,9 @@ sealed class AssuanOptionRequest
   static const cmd = 'OPTION';
   static const handler = AssuanOptionRequestHandler();
 
-  const factory AssuanOptionRequest(String name, [String? value]) =
-      _AssuanOptionRequest;
+  const factory(String name, [String? value]) = _AssuanOptionRequest;
 
-  const AssuanOptionRequest._();
+  const new _();
 
   @override
   String get command => cmd;
@@ -25,7 +24,7 @@ sealed class AssuanOptionRequest
 
 class AssuanOptionRequestHandler
     implements AssuanMessageHandler<AssuanOptionRequest> {
-  const AssuanOptionRequestHandler();
+  const new();
 
   @override
   bool hasData(_) => true;

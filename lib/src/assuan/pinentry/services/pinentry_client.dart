@@ -19,14 +19,14 @@ import '../protocol/requests/pinentry_set_timeout_request.dart';
 import 'pinentry_server.dart';
 
 abstract class PinentryClient extends AssuanClient {
-  PinentryClient(
+  new(
     StreamChannel<String> channel, {
     super.terminateSignal,
     super.forceCloseCallback,
     super.forceCloseTimeout,
   }) : super(PinentryProtocol(), channel);
 
-  PinentryClient.raw(
+  new raw(
     StreamChannel<List<int>> channel, {
     super.encoding,
     super.terminateSignal,
@@ -34,11 +34,8 @@ abstract class PinentryClient extends AssuanClient {
     super.forceCloseTimeout,
   }) : super.raw(PinentryProtocol(), channel);
 
-  PinentryClient.process(
-    Process process, {
-    super.encoding,
-    super.forceCloseTimeout,
-  }) : super.process(PinentryProtocol(), process);
+  new process(Process process, {super.encoding, super.forceCloseTimeout})
+    : super.process(PinentryProtocol(), process);
 
   Future<String> getInfo(PinentryInfoKey key) =>
       sendRequest(PinentryGetInfoRequest(key));

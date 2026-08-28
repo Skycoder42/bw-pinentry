@@ -7,7 +7,7 @@ part 'bw_login.g.dart';
 
 @freezed
 sealed class BwLogin with _$BwLogin {
-  const factory BwLogin({
+  const factory({
     String? username,
     String? password,
     String? totp,
@@ -16,6 +16,5 @@ sealed class BwLogin with _$BwLogin {
     DateTime? passwordRevisionDate,
   }) = _BwLogin;
 
-  factory BwLogin.fromJson(Map<String, dynamic> json) =>
-      _$BwLoginFromJson(json);
+  factory fromJson(Map<String, dynamic> json) => _$BwLoginFromJson(json);
 }

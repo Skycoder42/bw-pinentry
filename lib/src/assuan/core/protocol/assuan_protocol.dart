@@ -39,7 +39,7 @@ base class AssuanProtocol {
     AssuanCancelRequest.cmd: AssuanCancelRequest.handler,
   };
 
-  AssuanProtocol([
+  new([
     Map<String, AssuanMessageHandler<AssuanRequest>> requestHandlers = const {},
   ]) {
     _requestHandlers.addAll(requestHandlers);

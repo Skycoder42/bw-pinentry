@@ -12,9 +12,9 @@ sealed class PinentrySetRepeatRequest
   static const cmd = 'SETREPEAT';
   static const handler = PinentrySetRepeatRequestHandler();
 
-  const factory PinentrySetRepeatRequest() = _PinentrySetRepeatRequest;
+  const factory() = _PinentrySetRepeatRequest;
 
-  const PinentrySetRepeatRequest._();
+  const new _();
 
   @override
   String get command => cmd;
@@ -22,5 +22,5 @@ sealed class PinentrySetRepeatRequest
 
 class PinentrySetRepeatRequestHandler
     extends EmptyAssuanMessageHandler<PinentrySetRepeatRequest> {
-  const PinentrySetRepeatRequestHandler() : super(PinentrySetRepeatRequest.new);
+  const new() : super(PinentrySetRepeatRequest.new);
 }

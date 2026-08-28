@@ -9,5 +9,5 @@ enum BwFieldType {
 
   final int id;
 
-  const BwFieldType(this.id);
+  new(this.id);
 }

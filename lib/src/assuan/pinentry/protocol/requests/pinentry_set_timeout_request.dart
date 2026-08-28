@@ -14,10 +14,9 @@ sealed class PinentrySetTimeoutRequest
   static const cmd = 'SETTIMEOUT';
   static const handler = PinentrySetTimeoutRequestHandler();
 
-  const factory PinentrySetTimeoutRequest(Duration timeout) =
-      _PinentrySetTimeoutRequest;
+  const factory(Duration timeout) = _PinentrySetTimeoutRequest;
 
-  const PinentrySetTimeoutRequest._();
+  const new _();
 
   @override
   String get command => cmd;
@@ -25,7 +24,7 @@ sealed class PinentrySetTimeoutRequest
 
 class PinentrySetTimeoutRequestHandler
     implements AssuanMessageHandler<PinentrySetTimeoutRequest> {
-  const PinentrySetTimeoutRequestHandler();
+  const new();
 
   @override
   bool hasData(_) => true;

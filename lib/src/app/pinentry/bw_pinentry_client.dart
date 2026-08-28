@@ -7,7 +7,7 @@ import 'bw_pinentry_server.dart';
 class BwPinentryClient extends PinentryClient {
   final BwPinentryServer _server;
 
-  BwPinentryClient._(this._server, super.process) : super.process();
+  new _(this._server, super.process) : super.process();
 
   static Future<BwPinentryClient> start(
     BwPinentryServer server,

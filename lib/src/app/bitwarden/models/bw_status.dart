@@ -7,7 +7,7 @@ enum Status { unauthenticated, locked, unlocked }
 
 @freezed
 sealed class BwStatus with _$BwStatus {
-  const factory BwStatus({
+  const factory({
     required Status status,
     Uri? serverUrl,
     DateTime? lastSync,
@@ -15,6 +15,5 @@ sealed class BwStatus with _$BwStatus {
     String? userEmail,
   }) = _BwStatus;
 
-  factory BwStatus.fromJson(Map<String, dynamic> json) =>
-      _$BwStatusFromJson(json);
+  factory fromJson(Map<String, dynamic> json) => _$BwStatusFromJson(json);
 }

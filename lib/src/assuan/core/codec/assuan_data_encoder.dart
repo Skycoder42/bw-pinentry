@@ -6,7 +6,7 @@ import 'assuan_percent_codec.dart';
 
 class AssuanDataEncoder
     extends StreamTransformerBase<String, AssuanDataMessage> {
-  const AssuanDataEncoder();
+  const new();
 
   @override
   Stream<AssuanDataMessage> bind(Stream<String> stream) =>
@@ -19,7 +19,7 @@ class _AssuanDataEncoderSink implements EventSink<String> {
   final EventSink<AssuanDataMessage> _sink;
   final _buffer = StringBuffer();
 
-  _AssuanDataEncoderSink(this._sink);
+  new(this._sink);
 
   int get _remainingBufferLen =>
       AssuanDataMessage.maxDataLength - _buffer.length;

@@ -10,5 +10,5 @@ enum BwMatchType {
   never(5);
 
   final int id;
-  const BwMatchType(this.id);
+  new(this.id);
 }

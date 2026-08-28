@@ -10,9 +10,9 @@ sealed class AssuanByeRequest with _$AssuanByeRequest implements AssuanRequest {
   static const cmd = 'BYE';
   static const handler = AssuanByeRequestHandler();
 
-  const factory AssuanByeRequest() = _AssuanByeRequest;
+  const factory() = _AssuanByeRequest;
 
-  const AssuanByeRequest._();
+  const new _();
 
   @override
   String get command => cmd;
@@ -20,5 +20,5 @@ sealed class AssuanByeRequest with _$AssuanByeRequest implements AssuanRequest {
 
 class AssuanByeRequestHandler
     extends EmptyAssuanMessageHandler<AssuanByeRequest> {
-  const AssuanByeRequestHandler() : super(AssuanByeRequest.new);
+  const new() : super(AssuanByeRequest.new);
 }
