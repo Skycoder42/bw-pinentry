@@ -12,9 +12,9 @@ sealed class AssuanResetRequest
   static const cmd = 'RESET';
   static const handler = AssuanResetRequestHandler();
 
-  const factory AssuanResetRequest() = _AssuanResetRequest;
+  const factory() = _AssuanResetRequest;
 
-  const AssuanResetRequest._();
+  const new _();
 
   @override
   String get command => cmd;
@@ -22,5 +22,5 @@ sealed class AssuanResetRequest
 
 class AssuanResetRequestHandler
     extends EmptyAssuanMessageHandler<AssuanResetRequest> {
-  const AssuanResetRequestHandler() : super(AssuanResetRequest.new);
+  const new() : super(AssuanResetRequest.new);
 }

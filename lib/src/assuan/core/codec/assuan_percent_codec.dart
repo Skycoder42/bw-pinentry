@@ -3,7 +3,7 @@ import 'dart:convert';
 const assuanPercentCodec = AssuanPercentCodec();
 
 class AssuanPercentCodec extends Codec<String, String> {
-  const AssuanPercentCodec();
+  const new();
 
   @override
   Converter<String, String> get decoder => const _AssuanPercentDecoder();
@@ -15,7 +15,7 @@ class AssuanPercentCodec extends Codec<String, String> {
 class _AssuanPercentEncoder extends Converter<String, String> {
   static final _escapeRequiredCharsPattern = RegExp(r'[\%\n\r\\]');
 
-  const _AssuanPercentEncoder();
+  const new();
 
   @override
   String convert(String input) =>
@@ -32,7 +32,7 @@ class _AssuanPercentEncoder extends Converter<String, String> {
 class _AssuanPercentDecoder extends Converter<String, String> {
   static final _percentEncodedPattern = RegExp('((?:%[0-9a-fA-F]{2})+)');
 
-  const _AssuanPercentDecoder();
+  const new();
 
   @override
   String convert(String input) =>

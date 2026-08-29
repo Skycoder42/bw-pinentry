@@ -14,16 +14,16 @@ sealed class AssuanComment with _$AssuanComment implements AssuanCommentBase {
   static const cmd = '#';
   static const handler = AssuanCommentHandler();
 
-  const factory AssuanComment(String comment) = _AssuanComment;
+  const factory(String comment) = _AssuanComment;
 
-  const AssuanComment._();
+  const new _();
 
   @override
   String get command => cmd;
 }
 
 class AssuanCommentHandler implements AssuanMessageHandler<AssuanComment> {
-  const AssuanCommentHandler();
+  const new();
 
   @override
   bool hasData(_) => true;

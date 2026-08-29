@@ -9,5 +9,5 @@ enum BwItemType {
   sshKey(5);
 
   final int id;
-  const BwItemType(this.id);
+  new(this.id);
 }

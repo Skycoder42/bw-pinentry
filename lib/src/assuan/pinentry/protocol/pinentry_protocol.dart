@@ -11,7 +11,7 @@ import 'requests/pinentry_set_text_request.dart';
 import 'requests/pinentry_set_timeout_request.dart';
 
 final class PinentryProtocol extends AssuanProtocol {
-  PinentryProtocol()
+  new()
     : super({
         PinentryConfirmRequest.cmd: PinentryConfirmRequest.handler,
         PinentryEnableQualityBarRequest.cmd:

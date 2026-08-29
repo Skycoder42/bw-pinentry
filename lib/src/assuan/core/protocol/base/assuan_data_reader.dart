@@ -10,7 +10,7 @@ class AssuanDataReader {
   final String _data;
   int _offset;
 
-  AssuanDataReader(this.command, this._data, this._offset);
+  new(this.command, this._data, this._offset);
 
   bool hasMoreData({bool fixedSpace = false}) =>
       !_atEnd && (fixedSpace || _nextNonSpaceIndex() != -1);

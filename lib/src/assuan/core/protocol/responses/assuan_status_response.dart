@@ -18,10 +18,9 @@ sealed class AssuanStatusResponse
 
   static final _keywordPattern = RegExp(r'^[a-zA-Z_][a-zA-Z0-9_]*$');
 
-  factory AssuanStatusResponse(String keyword, String status) =
-      _AssuanStatusResponse;
+  factory(String keyword, String status) = _AssuanStatusResponse;
 
-  AssuanStatusResponse._() {
+  new _() {
     if (!_keywordPattern.hasMatch(keyword)) {
       throw AssuanException.code(
         AssuanErrorCode.parameter,
@@ -36,7 +35,7 @@ sealed class AssuanStatusResponse
 
 class AssuanStatusResponseHandler
     implements AssuanMessageHandler<AssuanStatusResponse> {
-  const AssuanStatusResponseHandler();
+  const new();
 
   @override
   bool hasData(_) => true;

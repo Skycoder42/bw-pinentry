@@ -7,13 +7,12 @@ part 'bw_field.g.dart';
 
 @freezed
 sealed class BwField with _$BwField {
-  const factory BwField({
+  const factory({
     required BwFieldType type,
     String? name,
     String? value,
     int? linkedId,
   }) = _BwField;
 
-  factory BwField.fromJson(Map<String, dynamic> json) =>
-      _$BwFieldFromJson(json);
+  factory fromJson(Map<String, dynamic> json) => _$BwFieldFromJson(json);
 }

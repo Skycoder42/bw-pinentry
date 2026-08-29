@@ -7,7 +7,7 @@ part 'bw_uri.g.dart';
 
 @freezed
 sealed class BwUri with _$BwUri {
-  const factory BwUri(String uri, [BwMatchType? match]) = _BwUri;
+  const factory(String uri, [BwMatchType? match]) = _BwUri;
 
-  factory BwUri.fromJson(Map<String, dynamic> json) => _$BwUriFromJson(json);
+  factory fromJson(Map<String, dynamic> json) => _$BwUriFromJson(json);
 }

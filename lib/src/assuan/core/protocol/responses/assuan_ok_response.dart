@@ -14,9 +14,9 @@ sealed class AssuanOkResponse
   static const cmd = 'OK';
   static const handler = AssuanOkResponseHandler();
 
-  const factory AssuanOkResponse([String? debugData]) = _AssuanOkResponse;
+  const factory([String? debugData]) = _AssuanOkResponse;
 
-  const AssuanOkResponse._();
+  const new _();
 
   @override
   String get command => cmd;
@@ -24,7 +24,7 @@ sealed class AssuanOkResponse
 
 class AssuanOkResponseHandler
     implements AssuanMessageHandler<AssuanOkResponse> {
-  const AssuanOkResponseHandler();
+  const new();
 
   @override
   bool hasData(AssuanOkResponse message) => message.debugData != null;

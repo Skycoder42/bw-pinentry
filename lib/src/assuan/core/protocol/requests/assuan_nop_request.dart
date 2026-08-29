@@ -10,9 +10,9 @@ sealed class AssuanNopRequest with _$AssuanNopRequest implements AssuanRequest {
   static const cmd = 'NOP';
   static const handler = AssuanNopRequestHandler();
 
-  const factory AssuanNopRequest() = _AssuanNopRequest;
+  const factory() = _AssuanNopRequest;
 
-  const AssuanNopRequest._();
+  const new _();
 
   @override
   String get command => cmd;
@@ -20,5 +20,5 @@ sealed class AssuanNopRequest with _$AssuanNopRequest implements AssuanRequest {
 
 class AssuanNopRequestHandler
     extends EmptyAssuanMessageHandler<AssuanNopRequest> {
-  const AssuanNopRequestHandler() : super(AssuanNopRequest.new);
+  const new() : super(AssuanNopRequest.new);
 }

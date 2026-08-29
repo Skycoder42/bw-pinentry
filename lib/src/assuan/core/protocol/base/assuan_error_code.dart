@@ -29,5 +29,5 @@ enum AssuanErrorCode {
   final int code;
   final String message;
 
-  const AssuanErrorCode(this.code, this.message);
+  new(this.code, this.message);
 }

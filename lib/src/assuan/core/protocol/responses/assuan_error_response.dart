@@ -14,10 +14,9 @@ sealed class AssuanErrorResponse
   static const cmd = 'ERR';
   static const handler = AssuanErrorResponseHandler();
 
-  const factory AssuanErrorResponse(int code, [String? message]) =
-      _AssuanErrorResponse;
+  const factory(int code, [String? message]) = _AssuanErrorResponse;
 
-  const AssuanErrorResponse._();
+  const new _();
 
   @override
   String get command => cmd;
@@ -25,7 +24,7 @@ sealed class AssuanErrorResponse
 
 class AssuanErrorResponseHandler
     implements AssuanMessageHandler<AssuanErrorResponse> {
-  const AssuanErrorResponseHandler();
+  const new();
 
   @override
   bool hasData(_) => true;

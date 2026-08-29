@@ -9,10 +9,9 @@ part 'bw_object.g.dart';
 
 @Freezed(unionKey: 'object')
 sealed class BwObject with _$BwObject {
-  const factory BwObject.folder({required String id, required String name}) =
-      BwFolder;
+  const factory folder({required String id, required String name}) = BwFolder;
 
-  const factory BwObject.item({
+  const factory item({
     required String id,
     required String name,
     required String folderId,
@@ -21,6 +20,5 @@ sealed class BwObject with _$BwObject {
     BwLogin? login,
   }) = BwItem;
 
-  factory BwObject.fromJson(Map<String, dynamic> json) =>
-      _$BwObjectFromJson(json);
+  factory fromJson(Map<String, dynamic> json) => _$BwObjectFromJson(json);
 }

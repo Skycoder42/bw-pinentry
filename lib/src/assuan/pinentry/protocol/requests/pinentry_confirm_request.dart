@@ -16,10 +16,9 @@ sealed class PinentryConfirmRequest
   static const cmd = 'CONFIRM';
   static const handler = PinentryConfirmRequestHandler();
 
-  const factory PinentryConfirmRequest({@Default(false) bool oneButton}) =
-      _PinentryConfirmRequest;
+  const factory({@Default(false) bool oneButton}) = _PinentryConfirmRequest;
 
-  const PinentryConfirmRequest._();
+  const new _();
 
   @override
   String get command => cmd;
@@ -29,7 +28,7 @@ class PinentryConfirmRequestHandler
     implements AssuanMessageHandler<PinentryConfirmRequest> {
   static const _oneButtonOption = '--one-button';
 
-  const PinentryConfirmRequestHandler();
+  const new();
 
   @override
   bool hasData(PinentryConfirmRequest message) => message.oneButton;

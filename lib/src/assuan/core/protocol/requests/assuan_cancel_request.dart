@@ -12,9 +12,9 @@ sealed class AssuanCancelRequest
   static const cmd = 'CAN';
   static const handler = AssuanCancelRequestHandler();
 
-  const factory AssuanCancelRequest() = _AssuanCancelRequest;
+  const factory() = _AssuanCancelRequest;
 
-  const AssuanCancelRequest._();
+  const new _();
 
   @override
   String get command => cmd;
@@ -22,5 +22,5 @@ sealed class AssuanCancelRequest
 
 class AssuanCancelRequestHandler
     extends EmptyAssuanMessageHandler<AssuanCancelRequest> {
-  const AssuanCancelRequestHandler() : super(AssuanCancelRequest.new);
+  const new() : super(AssuanCancelRequest.new);
 }

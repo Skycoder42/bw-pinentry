@@ -48,7 +48,7 @@ abstract class AssuanClient {
   PendingReply? _pendingReply;
   Timer? _forceCloseTimer;
 
-  AssuanClient(
+  new(
     this.protocol,
     this.channel, {
     this.terminateSignal,
@@ -93,7 +93,7 @@ abstract class AssuanClient {
     _pendingReply = PendingReply.action(completer);
   }
 
-  AssuanClient.raw(
+  new raw(
     AssuanProtocol protocol,
     StreamChannel<List<int>> channel, {
     Encoding encoding = utf8,
@@ -108,7 +108,7 @@ abstract class AssuanClient {
          forceCloseTimeout: forceCloseTimeout,
        );
 
-  AssuanClient.process(
+  new process(
     AssuanProtocol protocol,
     Process process, {
     Encoding encoding = systemEncoding,

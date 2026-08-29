@@ -12,9 +12,9 @@ sealed class AssuanHelpRequest
   static const cmd = 'HELP';
   static const handler = AssuanHelpRequestHandler();
 
-  const factory AssuanHelpRequest() = _AssuanHelpRequest;
+  const factory() = _AssuanHelpRequest;
 
-  const AssuanHelpRequest._();
+  const new _();
 
   @override
   String get command => cmd;
@@ -22,5 +22,5 @@ sealed class AssuanHelpRequest
 
 class AssuanHelpRequestHandler
     extends EmptyAssuanMessageHandler<AssuanHelpRequest> {
-  const AssuanHelpRequestHandler() : super(AssuanHelpRequest.new);
+  const new() : super(AssuanHelpRequest.new);
 }

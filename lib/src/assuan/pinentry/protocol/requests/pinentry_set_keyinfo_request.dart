@@ -14,10 +14,9 @@ sealed class PinentrySetKeyinfoRequest
   static const cmd = 'SETKEYINFO';
   static const handler = PinentrySetKeyinfoRequestHandler();
 
-  const factory PinentrySetKeyinfoRequest(String keyGrip) =
-      _PinentrySetKeyinfoRequest;
+  const factory(String keyGrip) = _PinentrySetKeyinfoRequest;
 
-  const PinentrySetKeyinfoRequest._();
+  const new _();
 
   @override
   String get command => cmd;
@@ -25,7 +24,7 @@ sealed class PinentrySetKeyinfoRequest
 
 class PinentrySetKeyinfoRequestHandler
     implements AssuanMessageHandler<PinentrySetKeyinfoRequest> {
-  const PinentrySetKeyinfoRequestHandler();
+  const new();
 
   @override
   bool hasData(_) => true;

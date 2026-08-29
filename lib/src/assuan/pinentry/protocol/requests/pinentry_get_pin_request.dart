@@ -12,9 +12,9 @@ sealed class PinentryGetPinRequest
   static const cmd = 'GETPIN';
   static const handler = PinentryGetPinRequestHandler();
 
-  const factory PinentryGetPinRequest() = _PinentryGetPinRequest;
+  const factory() = _PinentryGetPinRequest;
 
-  const PinentryGetPinRequest._();
+  const new _();
 
   @override
   String get command => cmd;
@@ -22,5 +22,5 @@ sealed class PinentryGetPinRequest
 
 class PinentryGetPinRequestHandler
     extends EmptyAssuanMessageHandler<PinentryGetPinRequest> {
-  const PinentryGetPinRequestHandler() : super(PinentryGetPinRequest.new);
+  const new() : super(PinentryGetPinRequest.new);
 }

@@ -18,9 +18,9 @@ sealed class AssuanDataMessage
   static const cmd = 'D';
   static const handler = AssuanDataMessageHandler();
 
-  factory AssuanDataMessage(String data) = _AssuanDataMessage;
+  factory(String data) = _AssuanDataMessage;
 
-  AssuanDataMessage._() {
+  new _() {
     if (data.contains('/r') || data.contains('/n')) {
       throw AssuanException.code(
         AssuanErrorCode.parameter,
@@ -35,7 +35,7 @@ sealed class AssuanDataMessage
 
 class AssuanDataMessageHandler
     implements AssuanMessageHandler<AssuanDataMessage> {
-  const AssuanDataMessageHandler();
+  const new();
 
   @override
   bool hasData(_) => true;

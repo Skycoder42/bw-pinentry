@@ -14,7 +14,7 @@ abstract class EmptyAssuanMessageHandler<T extends AssuanMessage>
     implements AssuanMessageHandler<T> {
   final T Function() _factory;
 
-  const EmptyAssuanMessageHandler(this._factory);
+  const new(this._factory);
 
   @override
   bool hasData(_) => false;

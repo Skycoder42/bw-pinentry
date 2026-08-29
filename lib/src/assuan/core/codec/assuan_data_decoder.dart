@@ -5,7 +5,7 @@ import 'assuan_percent_codec.dart';
 
 class AssuanDataDecoder
     extends StreamTransformerBase<AssuanDataMessage, String> {
-  const AssuanDataDecoder();
+  const new();
 
   @override
   Stream<String> bind(Stream<AssuanDataMessage> stream) =>
@@ -15,7 +15,7 @@ class AssuanDataDecoder
 class _AssuanDataDecoderSink implements EventSink<AssuanDataMessage> {
   final EventSink<String> _sink;
 
-  _AssuanDataDecoderSink(this._sink);
+  new(this._sink);
 
   @override
   void add(AssuanDataMessage event) =>
