@@ -56,7 +56,7 @@ final class BwPinentryServer extends PinentryServer {
     );
     _client = await BwPinentryClient.start(this, pinentry, _arguments);
     sendComment('Proxy is ready.');
-    return super.init();
+    await super.init();
   }
 
   @override
@@ -114,11 +114,11 @@ final class BwPinentryServer extends PinentryServer {
         return const OkReply();
       case PinentryMessageRequest():
       case PinentryConfirmRequest(oneButton: true):
-        return _showMessage();
+        return await _showMessage();
       case PinentryConfirmRequest(oneButton: false):
-        return _confirm();
+        return await _confirm();
       case PinentryGetPinRequest():
-        return _getPin();
+        return await _getPin();
       default:
         throw AssuanException.code(
           AssuanErrorCode.unknownCmd,
@@ -301,7 +301,7 @@ final class BwPinentryServer extends PinentryServer {
     } else {
       sendComment('$message Syncing vault, then trying again.');
       await _bwCli.sync();
-      return _findPassword(keyGrip, synced: true);
+      return await _findPassword(keyGrip, synced: true);
     }
   }
 
