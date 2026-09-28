@@ -24,7 +24,7 @@ dev_dependencies:
   build_runner: ^2.16.0
   dart_pre_commit: ^6.1.4
   dart_test_tools: ^7.3.2
-  freezed: ^4.0.0
+  freezed: ^4.0.2
   json_serializable: ^6.14.1
 
 aur:
