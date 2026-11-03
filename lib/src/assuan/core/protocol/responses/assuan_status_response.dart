@@ -10,7 +10,7 @@ import '../base/assuan_message_handler.dart';
 part 'assuan_status_response.freezed.dart';
 
 @freezed
-sealed class AssuanStatusResponse
+sealed class AssuanStatusResponse._()
     with _$AssuanStatusResponse
     implements AssuanResponse {
   static const cmd = 'S';
@@ -20,7 +20,7 @@ sealed class AssuanStatusResponse
 
   factory(String keyword, String status) = _AssuanStatusResponse;
 
-  new _() {
+  this {
     if (!_keywordPattern.hasMatch(keyword)) {
       throw AssuanException.code(
         AssuanErrorCode.parameter,
@@ -33,10 +33,8 @@ sealed class AssuanStatusResponse
   String get command => cmd;
 }
 
-class AssuanStatusResponseHandler
+class const AssuanStatusResponseHandler()
     implements AssuanMessageHandler<AssuanStatusResponse> {
-  const new();
-
   @override
   bool hasData(_) => true;
 

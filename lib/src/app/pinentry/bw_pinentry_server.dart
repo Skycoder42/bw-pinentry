@@ -26,10 +26,12 @@ import '../bitwarden/models/bw_object.dart';
 import '../bitwarden/models/bw_status.dart';
 import 'bw_pinentry_client.dart';
 
-final class BwPinentryServer extends PinentryServer {
+final class BwPinentryServer(
+  super.stdin,
+  super.stdout,
+  final List<String> _arguments,
+) extends PinentryServer {
   static const _folderName = 'GPG-Keys';
-
-  final List<String> _arguments;
 
   final _bwCli = BitwardenCli();
   late final BwPinentryClient _client;
@@ -38,7 +40,7 @@ final class BwPinentryServer extends PinentryServer {
   String? _keyGrip;
   var _skipBitwarden = false;
 
-  new(super.stdin, super.stdout, this._arguments) : super.io();
+  this : super.io();
 
   Stream<String> forwardInquiry(String keyword, List<String> parameters) =>
       startInquire(keyword, parameters);

@@ -6,7 +6,7 @@ import '../../../core/protocol/base/assuan_message_handler.dart';
 part 'pinentry_set_repeat_request.freezed.dart';
 
 @freezed
-sealed class PinentrySetRepeatRequest
+sealed class const PinentrySetRepeatRequest._()
     with _$PinentrySetRepeatRequest
     implements AssuanRequest {
   static const cmd = 'SETREPEAT';
@@ -14,13 +14,11 @@ sealed class PinentrySetRepeatRequest
 
   const factory() = _PinentrySetRepeatRequest;
 
-  const new _();
-
   @override
   String get command => cmd;
 }
 
-class PinentrySetRepeatRequestHandler
+class const PinentrySetRepeatRequestHandler()
     extends EmptyAssuanMessageHandler<PinentrySetRepeatRequest> {
-  const new() : super(PinentrySetRepeatRequest.new);
+  this : super(PinentrySetRepeatRequest.new);
 }

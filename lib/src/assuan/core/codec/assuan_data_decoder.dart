@@ -3,20 +3,15 @@ import 'dart:async';
 import '../protocol/assuan_data_message.dart';
 import 'assuan_percent_codec.dart';
 
-class AssuanDataDecoder
+class const AssuanDataDecoder()
     extends StreamTransformerBase<AssuanDataMessage, String> {
-  const new();
-
   @override
   Stream<String> bind(Stream<AssuanDataMessage> stream) =>
       Stream.eventTransformed(stream, _AssuanDataDecoderSink.new);
 }
 
-class _AssuanDataDecoderSink implements EventSink<AssuanDataMessage> {
-  final EventSink<String> _sink;
-
-  new(this._sink);
-
+class _AssuanDataDecoderSink(final EventSink<String> _sink)
+    implements EventSink<AssuanDataMessage> {
   @override
   void add(AssuanDataMessage event) =>
       _sink.add(assuanPercentCodec.decode(event.data));

@@ -2,15 +2,13 @@ import '../../codec/assuan_percent_codec.dart';
 import 'assuan_error_code.dart';
 import 'assuan_exception.dart';
 
-class AssuanDataReader {
+class AssuanDataReader(
+  final String command,
+  final String _data,
+  var int _offset,
+) {
   static const _space = ' ';
   static final _nonSpacePattern = RegExp(r'\S');
-
-  final String command;
-  final String _data;
-  int _offset;
-
-  new(this.command, this._data, this._offset);
 
   bool hasMoreData({bool fixedSpace = false}) =>
       !_atEnd && (fixedSpace || _nextNonSpaceIndex() != -1);

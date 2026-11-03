@@ -1,11 +1,9 @@
 import 'dart:convert';
 import 'dart:io';
 
-class AppendLineTerminatorConverter extends Converter<String, String> {
-  final String lineTerminator;
-
-  new({String? lineTerminator})
-    : lineTerminator = lineTerminator ?? Platform.lineTerminator;
+class AppendLineTerminatorConverter({String? lineTerminator})
+    extends Converter<String, String> {
+  final String lineTerminator = lineTerminator ?? Platform.lineTerminator;
 
   @override
   String convert(String input) => '$input$lineTerminator';
@@ -15,12 +13,10 @@ class AppendLineTerminatorConverter extends Converter<String, String> {
       _AppendLineTerminatorSink(sink, lineTerminator);
 }
 
-class _AppendLineTerminatorSink implements Sink<String> {
-  final Sink<String> _sink;
-  final String _lineTerminator;
-
-  new(this._sink, this._lineTerminator);
-
+class _AppendLineTerminatorSink(
+  final Sink<String> _sink,
+  final String _lineTerminator,
+) implements Sink<String> {
   @override
   void add(String data) {
     _sink

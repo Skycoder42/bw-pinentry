@@ -8,7 +8,7 @@ import '../base/assuan_message_handler.dart';
 part 'assuan_error_response.freezed.dart';
 
 @freezed
-sealed class AssuanErrorResponse
+sealed class const AssuanErrorResponse._()
     with _$AssuanErrorResponse
     implements AssuanResponse {
   static const cmd = 'ERR';
@@ -16,16 +16,12 @@ sealed class AssuanErrorResponse
 
   const factory(int code, [String? message]) = _AssuanErrorResponse;
 
-  const new _();
-
   @override
   String get command => cmd;
 }
 
-class AssuanErrorResponseHandler
+class const AssuanErrorResponseHandler()
     implements AssuanMessageHandler<AssuanErrorResponse> {
-  const new();
-
   @override
   bool hasData(_) => true;
 

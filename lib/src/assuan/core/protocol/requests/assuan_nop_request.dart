@@ -6,19 +6,19 @@ import '../base/assuan_message_handler.dart';
 part 'assuan_nop_request.freezed.dart';
 
 @freezed
-sealed class AssuanNopRequest with _$AssuanNopRequest implements AssuanRequest {
+sealed class const AssuanNopRequest._()
+    with _$AssuanNopRequest
+    implements AssuanRequest {
   static const cmd = 'NOP';
   static const handler = AssuanNopRequestHandler();
 
   const factory() = _AssuanNopRequest;
 
-  const new _();
-
   @override
   String get command => cmd;
 }
 
-class AssuanNopRequestHandler
+class const AssuanNopRequestHandler()
     extends EmptyAssuanMessageHandler<AssuanNopRequest> {
-  const new() : super(AssuanNopRequest.new);
+  this : super(AssuanNopRequest.new);
 }

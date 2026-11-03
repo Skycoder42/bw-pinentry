@@ -4,22 +4,18 @@ import 'dart:math';
 import '../protocol/assuan_data_message.dart';
 import 'assuan_percent_codec.dart';
 
-class AssuanDataEncoder
+class const AssuanDataEncoder()
     extends StreamTransformerBase<String, AssuanDataMessage> {
-  const new();
-
   @override
   Stream<AssuanDataMessage> bind(Stream<String> stream) =>
       Stream.eventTransformed(stream, _AssuanDataEncoderSink.new);
 }
 
-class _AssuanDataEncoderSink implements EventSink<String> {
+class _AssuanDataEncoderSink(final EventSink<AssuanDataMessage> _sink)
+    implements EventSink<String> {
   static final _escapeRequiredChars = RegExp(r'[\%\n\r\\]');
 
-  final EventSink<AssuanDataMessage> _sink;
   final _buffer = StringBuffer();
-
-  new(this._sink);
 
   int get _remainingBufferLen =>
       AssuanDataMessage.maxDataLength - _buffer.length;

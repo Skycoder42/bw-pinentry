@@ -5,7 +5,7 @@ import 'dart:io';
 import 'models/bw_object.dart';
 import 'models/bw_status.dart';
 
-class BitwardenCli {
+class BitwardenCli() {
   static const _passwordEnvKey = '__BITWARDEN_MASTER_PASSWORD';
 
   String? _session;

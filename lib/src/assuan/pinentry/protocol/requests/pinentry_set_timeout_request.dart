@@ -8,7 +8,7 @@ import '../../../core/protocol/base/assuan_message_handler.dart';
 part 'pinentry_set_timeout_request.freezed.dart';
 
 @freezed
-sealed class PinentrySetTimeoutRequest
+sealed class const PinentrySetTimeoutRequest._()
     with _$PinentrySetTimeoutRequest
     implements AssuanRequest {
   static const cmd = 'SETTIMEOUT';
@@ -16,16 +16,12 @@ sealed class PinentrySetTimeoutRequest
 
   const factory(Duration timeout) = _PinentrySetTimeoutRequest;
 
-  const new _();
-
   @override
   String get command => cmd;
 }
 
-class PinentrySetTimeoutRequestHandler
+class const PinentrySetTimeoutRequestHandler()
     implements AssuanMessageHandler<PinentrySetTimeoutRequest> {
-  const new();
-
   @override
   bool hasData(_) => true;
 

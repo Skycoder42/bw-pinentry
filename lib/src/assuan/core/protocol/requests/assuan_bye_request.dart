@@ -6,19 +6,19 @@ import '../base/assuan_message_handler.dart';
 part 'assuan_bye_request.freezed.dart';
 
 @freezed
-sealed class AssuanByeRequest with _$AssuanByeRequest implements AssuanRequest {
+sealed class const AssuanByeRequest._()
+    with _$AssuanByeRequest
+    implements AssuanRequest {
   static const cmd = 'BYE';
   static const handler = AssuanByeRequestHandler();
 
   const factory() = _AssuanByeRequest;
 
-  const new _();
-
   @override
   String get command => cmd;
 }
 
-class AssuanByeRequestHandler
+class const AssuanByeRequestHandler()
     extends EmptyAssuanMessageHandler<AssuanByeRequest> {
-  const new() : super(AssuanByeRequest.new);
+  this : super(AssuanByeRequest.new);
 }

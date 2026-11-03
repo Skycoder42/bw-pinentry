@@ -10,7 +10,7 @@ import '../../../core/protocol/base/assuan_message_handler.dart';
 part 'pinentry_confirm_request.freezed.dart';
 
 @freezed
-sealed class PinentryConfirmRequest
+sealed class const PinentryConfirmRequest._()
     with _$PinentryConfirmRequest
     implements AssuanRequest {
   static const cmd = 'CONFIRM';
@@ -18,17 +18,13 @@ sealed class PinentryConfirmRequest
 
   const factory({@Default(false) bool oneButton}) = _PinentryConfirmRequest;
 
-  const new _();
-
   @override
   String get command => cmd;
 }
 
-class PinentryConfirmRequestHandler
+class const PinentryConfirmRequestHandler()
     implements AssuanMessageHandler<PinentryConfirmRequest> {
   static const _oneButtonOption = '--one-button';
-
-  const new();
 
   @override
   bool hasData(PinentryConfirmRequest message) => message.oneButton;

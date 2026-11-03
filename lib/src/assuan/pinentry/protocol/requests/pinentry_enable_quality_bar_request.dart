@@ -6,7 +6,7 @@ import '../../../core/protocol/base/assuan_message_handler.dart';
 part 'pinentry_enable_quality_bar_request.freezed.dart';
 
 @freezed
-sealed class PinentryEnableQualityBarRequest
+sealed class const PinentryEnableQualityBarRequest._()
     with _$PinentryEnableQualityBarRequest
     implements AssuanRequest {
   static const cmd = 'SETQUALITYBAR';
@@ -14,13 +14,11 @@ sealed class PinentryEnableQualityBarRequest
 
   const factory() = _PinentryEnableQualityBarRequest;
 
-  const new _();
-
   @override
   String get command => cmd;
 }
 
-class PinentryEnableQualityBarRequestHandler
+class const PinentryEnableQualityBarRequestHandler()
     extends EmptyAssuanMessageHandler<PinentryEnableQualityBarRequest> {
-  const new() : super(PinentryEnableQualityBarRequest.new);
+  this : super(PinentryEnableQualityBarRequest.new);
 }

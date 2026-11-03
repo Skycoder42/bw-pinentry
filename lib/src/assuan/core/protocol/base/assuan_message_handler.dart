@@ -2,7 +2,7 @@ import 'assuan_data_reader.dart';
 import 'assuan_data_writer.dart';
 import 'assuan_message.dart';
 
-abstract interface class AssuanMessageHandler<T extends AssuanMessage> {
+abstract interface class AssuanMessageHandler<T extends AssuanMessage>() {
   bool hasData(T message);
 
   void encodeData(T message, AssuanDataWriter writer);
@@ -10,12 +10,9 @@ abstract interface class AssuanMessageHandler<T extends AssuanMessage> {
   T decodeData(AssuanDataReader reader);
 }
 
-abstract class EmptyAssuanMessageHandler<T extends AssuanMessage>
-    implements AssuanMessageHandler<T> {
-  final T Function() _factory;
-
-  const new(this._factory);
-
+abstract class const EmptyAssuanMessageHandler<T extends AssuanMessage>(
+  final T Function() _factory,
+) implements AssuanMessageHandler<T> {
   @override
   bool hasData(_) => false;
 

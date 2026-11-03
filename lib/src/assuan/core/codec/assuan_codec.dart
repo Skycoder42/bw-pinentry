@@ -7,12 +7,9 @@ import '../protocol/base/assuan_message.dart';
 import 'assuan_message_decoder.dart';
 import 'assuan_message_encoder.dart';
 
-sealed class AssuanCodec<T extends AssuanMessage> extends Codec<T, String> {
-  @protected
-  final AssuanProtocol protocol;
-
-  new(this.protocol);
-
+sealed class AssuanCodec<T extends AssuanMessage>(
+  @protected final AssuanProtocol protocol,
+) extends Codec<T, String> {
   @override
   AssuanMessageEncoder<T> get encoder;
 
@@ -20,9 +17,7 @@ sealed class AssuanCodec<T extends AssuanMessage> extends Codec<T, String> {
   AssuanMessageDecoder<T> get decoder;
 }
 
-class AssuanRequestCodec extends AssuanCodec<AssuanRequest> {
-  new(super.protocol);
-
+class AssuanRequestCodec(super.protocol) extends AssuanCodec<AssuanRequest> {
   @override
   AssuanRequestEncoder get encoder => AssuanRequestEncoder(protocol);
 
@@ -30,9 +25,7 @@ class AssuanRequestCodec extends AssuanCodec<AssuanRequest> {
   AssuanRequestDecoder get decoder => AssuanRequestDecoder(protocol);
 }
 
-class AssuanResponseCodec extends AssuanCodec<AssuanResponse> {
-  new(super.protocol);
-
+class AssuanResponseCodec(super.protocol) extends AssuanCodec<AssuanResponse> {
   @override
   AssuanResponseEncoder get encoder => AssuanResponseEncoder(protocol);
 

@@ -7,10 +7,15 @@ import '../../../core/protocol/base/assuan_message_handler.dart';
 
 part 'pinentry_get_info_request.freezed.dart';
 
-enum PinentryInfoKey { flavor, version, ttyinfo, pid }
+enum PinentryInfoKey() {
+  flavor,
+  version,
+  ttyinfo,
+  pid,
+}
 
 @freezed
-sealed class PinentryGetInfoRequest
+sealed class const PinentryGetInfoRequest._()
     with _$PinentryGetInfoRequest
     implements AssuanRequest {
   static const cmd = 'GETINFO';
@@ -18,16 +23,12 @@ sealed class PinentryGetInfoRequest
 
   const factory(PinentryInfoKey key) = _PinentryGetInfoRequest;
 
-  const new _();
-
   @override
   String get command => cmd;
 }
 
-class PinentryGetInfoRequestHandler
+class const PinentryGetInfoRequestHandler()
     implements AssuanMessageHandler<PinentryGetInfoRequest> {
-  const new();
-
   @override
   bool hasData(_) => true;
 

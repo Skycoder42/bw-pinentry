@@ -30,10 +30,10 @@ import '../protocol/responses/assuan_ok_response.dart';
 import '../protocol/responses/assuan_status_response.dart';
 import 'models/server_reply.dart';
 
-abstract class AssuanServer {
-  final AssuanProtocol protocol;
-  final StreamChannel<String> channel;
-
+abstract class AssuanServer(
+  final AssuanProtocol protocol,
+  final StreamChannel<String> channel,
+) {
   var _closed = false;
 
   late final StreamSubscription<void> _requestSub;
@@ -43,7 +43,7 @@ abstract class AssuanServer {
   // ignore: close_sinks false positive
   StreamController<AssuanDataMessage>? _pendingInquire;
 
-  new(this.protocol, this.channel) {
+  this {
     _responseSink = channel.sink
         .transform(
           StreamSinkTransformer.fromStreamTransformer(

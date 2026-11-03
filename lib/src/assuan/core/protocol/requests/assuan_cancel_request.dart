@@ -6,7 +6,7 @@ import '../base/assuan_message_handler.dart';
 part 'assuan_cancel_request.freezed.dart';
 
 @freezed
-sealed class AssuanCancelRequest
+sealed class const AssuanCancelRequest._()
     with _$AssuanCancelRequest
     implements AssuanRequest {
   static const cmd = 'CAN';
@@ -14,13 +14,11 @@ sealed class AssuanCancelRequest
 
   const factory() = _AssuanCancelRequest;
 
-  const new _();
-
   @override
   String get command => cmd;
 }
 
-class AssuanCancelRequestHandler
+class const AssuanCancelRequestHandler()
     extends EmptyAssuanMessageHandler<AssuanCancelRequest> {
-  const new() : super(AssuanCancelRequest.new);
+  this : super(AssuanCancelRequest.new);
 }

@@ -6,7 +6,7 @@ import '../base/assuan_message_handler.dart';
 part 'assuan_reset_request.freezed.dart';
 
 @freezed
-sealed class AssuanResetRequest
+sealed class const AssuanResetRequest._()
     with _$AssuanResetRequest
     implements AssuanRequest {
   static const cmd = 'RESET';
@@ -14,13 +14,11 @@ sealed class AssuanResetRequest
 
   const factory() = _AssuanResetRequest;
 
-  const new _();
-
   @override
   String get command => cmd;
 }
 
-class AssuanResetRequestHandler
+class const AssuanResetRequestHandler()
     extends EmptyAssuanMessageHandler<AssuanResetRequest> {
-  const new() : super(AssuanResetRequest.new);
+  this : super(AssuanResetRequest.new);
 }
