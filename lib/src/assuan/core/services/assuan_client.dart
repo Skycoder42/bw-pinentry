@@ -30,14 +30,14 @@ import 'models/pending_reply.dart';
 
 typedef CloseCallback = Future<void> Function();
 
-abstract class AssuanClient {
+abstract class AssuanClient(
+  final AssuanProtocol protocol,
+  final StreamChannel<String> channel, {
+  final Future<void>? terminateSignal,
+  final CloseCallback? forceCloseCallback,
+  final Duration forceCloseTimeout = defaultForceCloseTimeout,
+}) {
   static const defaultForceCloseTimeout = Duration(seconds: 5);
-
-  final AssuanProtocol protocol;
-  final StreamChannel<String> channel;
-  final Future<void>? terminateSignal;
-  final Duration forceCloseTimeout;
-  final CloseCallback? forceCloseCallback;
 
   late Future<void> connected;
   var _closed = false;
@@ -48,13 +48,7 @@ abstract class AssuanClient {
   PendingReply? _pendingReply;
   Timer? _forceCloseTimer;
 
-  new(
-    this.protocol,
-    this.channel, {
-    this.terminateSignal,
-    this.forceCloseCallback,
-    this.forceCloseTimeout = defaultForceCloseTimeout,
-  }) {
+  this {
     _requestSink = channel.sink
         .transform(
           StreamSinkTransformer.fromStreamTransformer(

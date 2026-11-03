@@ -8,7 +8,7 @@ import '../../../core/protocol/base/assuan_message_handler.dart';
 part 'pinentry_set_keyinfo_request.freezed.dart';
 
 @freezed
-sealed class PinentrySetKeyinfoRequest
+sealed class const PinentrySetKeyinfoRequest._()
     with _$PinentrySetKeyinfoRequest
     implements AssuanRequest {
   static const cmd = 'SETKEYINFO';
@@ -16,16 +16,12 @@ sealed class PinentrySetKeyinfoRequest
 
   const factory(String keyGrip) = _PinentrySetKeyinfoRequest;
 
-  const new _();
-
   @override
   String get command => cmd;
 }
 
-class PinentrySetKeyinfoRequestHandler
+class const PinentrySetKeyinfoRequestHandler()
     implements AssuanMessageHandler<PinentrySetKeyinfoRequest> {
-  const new();
-
   @override
   bool hasData(_) => true;
 

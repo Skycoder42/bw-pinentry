@@ -7,7 +7,7 @@ import '../../../core/protocol/base/assuan_message_handler.dart';
 
 part 'pinentry_set_text_request.freezed.dart';
 
-enum SetCommand {
+enum SetCommand(final String command) {
   description('SETDESC'),
   prompt('SETPROMPT'),
   title('SETTITLE'),
@@ -16,15 +16,11 @@ enum SetCommand {
   notOk('SETNOTOK'),
   error('SETERROR'),
   qualityBar('SETQUALITYBAR_TT'),
-  genPin('SETGENPIN_TT');
-
-  final String command;
-
-  new(this.command);
+  genPin('SETGENPIN_TT'),
 }
 
 @freezed
-sealed class PinentrySetTextRequest
+sealed class const PinentrySetTextRequest._()
     with _$PinentrySetTextRequest
     implements AssuanRequest {
   static Iterable<String> get cmds => SetCommand.values.map((v) => v.command);
@@ -32,16 +28,12 @@ sealed class PinentrySetTextRequest
 
   const factory(SetCommand setCommand, String text) = _PinentrySetTextRequest;
 
-  const new _();
-
   @override
   String get command => setCommand.command;
 }
 
-class PinentrySetTextRequestHandler
+class const PinentrySetTextRequestHandler()
     implements AssuanMessageHandler<PinentrySetTextRequest> {
-  const new();
-
   @override
   bool hasData(_) => true;
 

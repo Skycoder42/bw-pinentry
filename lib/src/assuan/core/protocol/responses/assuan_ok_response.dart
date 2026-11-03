@@ -8,7 +8,7 @@ import '../base/assuan_message_handler.dart';
 part 'assuan_ok_response.freezed.dart';
 
 @freezed
-sealed class AssuanOkResponse
+sealed class const AssuanOkResponse._()
     with _$AssuanOkResponse
     implements AssuanResponse {
   static const cmd = 'OK';
@@ -16,16 +16,12 @@ sealed class AssuanOkResponse
 
   const factory([String? debugData]) = _AssuanOkResponse;
 
-  const new _();
-
   @override
   String get command => cmd;
 }
 
-class AssuanOkResponseHandler
+class const AssuanOkResponseHandler()
     implements AssuanMessageHandler<AssuanOkResponse> {
-  const new();
-
   @override
   bool hasData(AssuanOkResponse message) => message.debugData != null;
 

@@ -6,7 +6,7 @@ import '../../../core/protocol/base/assuan_message_handler.dart';
 part 'pinentry_get_pin_request.freezed.dart';
 
 @freezed
-sealed class PinentryGetPinRequest
+sealed class const PinentryGetPinRequest._()
     with _$PinentryGetPinRequest
     implements AssuanRequest {
   static const cmd = 'GETPIN';
@@ -14,13 +14,11 @@ sealed class PinentryGetPinRequest
 
   const factory() = _PinentryGetPinRequest;
 
-  const new _();
-
   @override
   String get command => cmd;
 }
 
-class PinentryGetPinRequestHandler
+class const PinentryGetPinRequestHandler()
     extends EmptyAssuanMessageHandler<PinentryGetPinRequest> {
-  const new() : super(PinentryGetPinRequest.new);
+  this : super(PinentryGetPinRequest.new);
 }

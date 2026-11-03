@@ -10,7 +10,7 @@ import 'base/assuan_message_handler.dart';
 part 'assuan_data_message.freezed.dart';
 
 @freezed
-sealed class AssuanDataMessage
+sealed class AssuanDataMessage._()
     with _$AssuanDataMessage
     implements AssuanRequest, AssuanResponse {
   static const maxDataLength = 1000 - 2;
@@ -20,7 +20,7 @@ sealed class AssuanDataMessage
 
   factory(String data) = _AssuanDataMessage;
 
-  new _() {
+  this {
     if (data.contains('/r') || data.contains('/n')) {
       throw AssuanException.code(
         AssuanErrorCode.parameter,
@@ -33,10 +33,8 @@ sealed class AssuanDataMessage
   String get command => cmd;
 }
 
-class AssuanDataMessageHandler
+class const AssuanDataMessageHandler()
     implements AssuanMessageHandler<AssuanDataMessage> {
-  const new();
-
   @override
   bool hasData(_) => true;
 

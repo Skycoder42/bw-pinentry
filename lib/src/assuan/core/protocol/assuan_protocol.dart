@@ -16,7 +16,9 @@ import 'responses/assuan_inquire_response.dart';
 import 'responses/assuan_ok_response.dart';
 import 'responses/assuan_status_response.dart';
 
-base class AssuanProtocol {
+base class AssuanProtocol([
+  Map<String, AssuanMessageHandler<AssuanRequest>> requestHandlers = const {},
+]) {
   final _responseHandlers =
       const <String, AssuanMessageHandler<AssuanResponse>>{
         AssuanComment.cmd: AssuanComment.handler,
@@ -39,9 +41,7 @@ base class AssuanProtocol {
     AssuanCancelRequest.cmd: AssuanCancelRequest.handler,
   };
 
-  new([
-    Map<String, AssuanMessageHandler<AssuanRequest>> requestHandlers = const {},
-  ]) {
+  this {
     _requestHandlers.addAll(requestHandlers);
   }
 

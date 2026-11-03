@@ -1,5 +1,5 @@
 // https://github.com/gpg/libgpg-error/blob/master/src/err-codes.h.in#L293
-enum AssuanErrorCode {
+enum AssuanErrorCode(final int code, final String message) {
   general(257, 'General IPC error'),
   acceptFailed(258, 'IPC accept call failed'),
   connectFailed(259, 'IPC connect call failed'),
@@ -24,10 +24,5 @@ enum AssuanErrorCode {
   noInput(278, 'No input source for IPC'),
   noOutput(279, 'No output source for IPC'),
   parameter(280, 'IPC parameter error'),
-  unknownInquire(281, 'Unknown IPC inquire');
-
-  final int code;
-  final String message;
-
-  new(this.code, this.message);
+  unknownInquire(281, 'Unknown IPC inquire'),
 }

@@ -1,13 +1,10 @@
 import 'package:json_annotation/json_annotation.dart';
 
 @JsonEnum(valueField: 'id')
-enum BwItemType {
+enum BwItemType(final int id) {
   login(1),
   secureNote(2),
   card(3),
   identity(4),
-  sshKey(5);
-
-  final int id;
-  new(this.id);
+  sshKey(5),
 }

@@ -8,7 +8,7 @@ import '../base/assuan_message_handler.dart';
 part 'assuan_option_request.freezed.dart';
 
 @freezed
-sealed class AssuanOptionRequest
+sealed class const AssuanOptionRequest._()
     with _$AssuanOptionRequest
     implements AssuanRequest {
   static const cmd = 'OPTION';
@@ -16,16 +16,12 @@ sealed class AssuanOptionRequest
 
   const factory(String name, [String? value]) = _AssuanOptionRequest;
 
-  const new _();
-
   @override
   String get command => cmd;
 }
 
-class AssuanOptionRequestHandler
+class const AssuanOptionRequestHandler()
     implements AssuanMessageHandler<AssuanOptionRequest> {
-  const new();
-
   @override
   bool hasData(_) => true;
 

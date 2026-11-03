@@ -4,10 +4,9 @@ import '../../assuan/core/services/models/inquiry_reply.dart';
 import '../../assuan/pinentry/services/pinentry_client.dart';
 import 'bw_pinentry_server.dart';
 
-class BwPinentryClient extends PinentryClient {
-  final BwPinentryServer _server;
-
-  new _(this._server, super.process) : super.process();
+class BwPinentryClient._(final BwPinentryServer _server, super.process)
+    extends PinentryClient {
+  this : super.process();
 
   static Future<BwPinentryClient> start(
     BwPinentryServer server,

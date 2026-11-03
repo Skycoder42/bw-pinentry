@@ -2,11 +2,7 @@ import '../../codec/assuan_percent_codec.dart';
 import 'assuan_error_code.dart';
 import 'assuan_exception.dart';
 
-class AssuanDataWriter {
-  final StringBuffer _buffer;
-
-  new(this._buffer);
-
+class AssuanDataWriter(final StringBuffer _buffer) {
   void write<T extends Object>(T object, {bool autoSpace = true}) =>
       switch (object) {
         String() => writeRaw(

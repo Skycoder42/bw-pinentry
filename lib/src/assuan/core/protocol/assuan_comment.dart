@@ -10,21 +10,20 @@ import 'base/assuan_message_handler.dart';
 part 'assuan_comment.freezed.dart';
 
 @freezed
-sealed class AssuanComment with _$AssuanComment implements AssuanCommentBase {
+sealed class const AssuanComment._()
+    with _$AssuanComment
+    implements AssuanCommentBase {
   static const cmd = '#';
   static const handler = AssuanCommentHandler();
 
   const factory(String comment) = _AssuanComment;
 
-  const new _();
-
   @override
   String get command => cmd;
 }
 
-class AssuanCommentHandler implements AssuanMessageHandler<AssuanComment> {
-  const new();
-
+class const AssuanCommentHandler()
+    implements AssuanMessageHandler<AssuanComment> {
   @override
   bool hasData(_) => true;
 

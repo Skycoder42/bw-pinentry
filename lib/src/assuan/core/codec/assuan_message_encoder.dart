@@ -10,31 +10,25 @@ import '../protocol/base/assuan_message.dart';
 import '../protocol/base/assuan_message_handler.dart';
 import 'converter_sink.dart';
 
-class AssuanRequestEncoder extends AssuanMessageEncoder<AssuanRequest> {
-  new(super.protocol);
-
+class AssuanRequestEncoder(super.protocol)
+    extends AssuanMessageEncoder<AssuanRequest> {
   @override
   @visibleForOverriding
   AssuanMessageHandler<AssuanRequest>? getHandler(String command) =>
       protocol.requestHandler(command);
 }
 
-class AssuanResponseEncoder extends AssuanMessageEncoder<AssuanResponse> {
-  new(super.protocol);
-
+class AssuanResponseEncoder(super.protocol)
+    extends AssuanMessageEncoder<AssuanResponse> {
   @override
   @visibleForOverriding
   AssuanMessageHandler<AssuanResponse>? getHandler(String command) =>
       protocol.responseHandler(command);
 }
 
-sealed class AssuanMessageEncoder<T extends AssuanMessage>
-    extends Converter<T, String> {
-  @protected
-  final AssuanProtocol protocol;
-
-  new(this.protocol);
-
+sealed class AssuanMessageEncoder<T extends AssuanMessage>(
+  @protected final AssuanProtocol protocol,
+) extends Converter<T, String> {
   @visibleForOverriding
   AssuanMessageHandler<T>? getHandler(String command);
 
