@@ -16,6 +16,7 @@ jobs:
     with:
       buildRunner: true
       unitTestPaths: ""
+      flutterCompat: false
 
   build:
     name: CD
@@ -44,3 +45,19 @@ jobs:
     uses: Skycoder42/dart_test_tools/.github/workflows/aur.yml@main
     secrets:
       AUR_SSH_PRIVATE_KEY: ${{ secrets.AUR_SSH_PRIVATE_KEY }}
+
+  renovate:
+    name: Renovate
+    needs:
+      - ci
+      - build
+      - release
+      - aur_deploy
+    if: ${{ !cancelled() }}
+    uses: Skycoder42/dart_test_tools/.github/workflows/renovate-finish.yml@main
+    permissions:
+      contents: write
+      pull-requests: write
+      actions: write
+    with:
+      needs: ${{ toJSON(needs) }}
