@@ -269,7 +269,7 @@ final class BwPinentryServer(
           message: 'Found matching item, but it is not a login!',
           synced: synced,
         );
-      case [BwItem(login: BwLogin(password: final String password))]:
+      case [BwItem(login: BwLogin(:final String password))]:
         sendComment('Found matching login item with password set.');
         return password;
       case [_]:
